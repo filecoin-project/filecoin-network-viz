@@ -1,0 +1,37 @@
+line.node-link, path.node-link {
+  fill: none;
+  stroke: #1f77b4;
+  stroke-opacity: 0.4;
+  pointer-events: none;
+}
+
+line.node-action, path.node-action {
+  fill: none;
+  stroke: #1f77b4;
+  stroke-opacity: 1;
+  pointer-events: none;
+}
+
+.red {
+  stroke: #cc0000 !important;
+}
+
+circle.node {
+  fill: white;
+  stroke: black;
+}
+circle.node+text {
+  text-anchor: middle;
+}
+text {
+  font-family: sans-serif;
+  pointer-events: none;
+}
+
+.type-miner .node {
+  fill: #1f77b4;
+}
+.type-miner text {
+  fill: white;
+  font-size: 0.8em;
+}
