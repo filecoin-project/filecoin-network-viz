@@ -154,6 +154,7 @@ var width = 700
 var height = 700
 
 var svg = d3.select('body').append('svg')
+    .attr('id', 'network')
     .attr('width', width)
     .attr('height', height)
 
@@ -195,8 +196,12 @@ function DrawNodes (graph) {
   })
 
   // Nodes
-  var gnodes = svg.selectAll('g.gnode')
-    .data(nodes).enter()
+  var gnodesD = svg.selectAll('g.gnode')
+    .data(nodes)
+
+  // on creation
+  var gnodes = gnodesD
+    .enter()
     .append('g')
     .attr('transform', d => {
       return 'translate(' + d.x + ',' + d.y + ')'
@@ -205,7 +210,26 @@ function DrawNodes (graph) {
       return 'gnode' + ' type-' + d.type
     })
 
-  var node = gnodes.append('image')
+  gnodes.append('image')
+  gnodes.append('text').attr('class', 'name')
+  gnodes.append('text').attr('class', 'balance')
+
+  // on removal
+  gnodesD
+    .exit()
+    .remove()
+
+  // on upsert
+  gnodesD
+    .transition()
+    .attr('transform', d => {
+      return 'translate(' + d.x + ',' + d.y + ')'
+    })
+    .attr('class', d => {
+      return 'gnode' + ' type-' + d.type
+    })
+
+  gnodesD.select('image')
       .attr('href', d => 'img/' + d.type + '.png')
       .attr('width', 30)
       .attr('x', -15)
@@ -214,11 +238,18 @@ function DrawNodes (graph) {
         return 'node'
       })
 
-  var labels = gnodes.append('text')
+  gnodesD.select('text.name')
       .attr('dy', 25)
       .attr('dx', -15)
       .text(d => { return d.id })
+
+  gnodesD.select('text.balance')
+      .attr('dy', -20)
+      .attr('dx', -15)
+      // .text(d => { return d.id })
 }
+
+// -----------------------------------------------------------------------------
 
 // Running actions
 
@@ -333,18 +364,80 @@ function runEvent (event) {
   })
 }
 
+// -----------------------------------------------------------------------------
+
 // Main
 
-const miners = d3.range(10).map(d => { return {id: 'miner' + d} })
-const clients = d3.range(10).map(d => { return {id: 'client' + d} })
-const filecoin = new Filecoin(miners, clients)
+function getRandomInt (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+let minersCount = 10
+let clientsCount = 10
+
+let miners = d3.range(minersCount).map(d => { return {id: 'miner' + d} })
+let clients = d3.range(clientsCount).map(d => { return {id: 'client' + d} })
+let filecoin = new Filecoin(miners, clients)
 
 DrawNodes(filecoin)
 
+// setInterval(() => {
+//   minersCount += getRandomInt(0, 6) - 3
+//   clientsCount += getRandomInt(0, 6) - 3
+//   miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
+//   clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
+//   filecoin = new Filecoin(miners, clients)
+
+//   DrawNodes(filecoin)
+// }, 6000)
+
+const chain = []
+
 setInterval(() => {
+  chain.push({id: chain.length + 1})
   runEvent(filecoin.BroadcastBlock())
-}, 5000)
+  DrawBlockchain(chain)
+}, 1000)
 
 setInterval(() => {
   runEvent(filecoin.RandomEvent())
-}, 310)
+}, 500)
+
+// D3 -- Canvas
+var width = 300
+var height = 700
+
+var svg2 = d3.select('body').append('svg')
+    .attr('id', 'blockchain')
+    .attr('width', width)
+    .attr('height', height)
+
+function DrawBlockchain (data) {
+  // const sliced = data.slice(-3)
+  // console.log(sliced)
+  lis = svg2.selectAll('g.block')
+    .data(data)
+
+  let block = lis.enter().append('g')
+    .attr('class', d => 'block b-' + d.id)
+
+  lis.exit().remove()
+
+  lis
+    .transition()
+    .attr('transform', (d, i) => {
+      return 'translate(0,' + (data.length - i) * 50 + ')'
+    })
+
+  block.append('image')
+    .attr('href', 'img/block.png')
+    .attr('width', 50)
+
+  block.append('text')
+    .attr('x', 60)
+    .attr('y', 50)
+
+  lis.selectAll('text')
+    .transition()
+    .text(d => 'Block ' + d.id)
+}

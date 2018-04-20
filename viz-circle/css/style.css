@@ -29,3 +29,10 @@ text {
 .type-client text, .type-miner text {
   font-size: 0.7em;
 }
+
+#network {
+  float: left;
+}
+#chain {
+  float: right;
+}
