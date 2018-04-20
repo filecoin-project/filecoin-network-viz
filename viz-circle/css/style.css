@@ -7,13 +7,8 @@ line.node-link, path.node-link {
 
 line.node-action, path.node-action {
   fill: none;
-  stroke: #1f77b4;
   stroke-opacity: 1;
   pointer-events: none;
-}
-
-.red {
-  stroke: #cc0000 !important;
 }
 
 circle.node {
@@ -31,7 +26,6 @@ text {
 .type-miner .node {
   fill: #1f77b4;
 }
-.type-miner text {
-  fill: white;
-  font-size: 0.8em;
+.type-client text, .type-miner text {
+  font-size: 0.7em;
 }
