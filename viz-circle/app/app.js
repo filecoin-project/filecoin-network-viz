@@ -10,12 +10,16 @@
 // This object has the list of miners, clients and possible actions
 class Filecoin {
   constructor (miners, clients) {
+    this.chain = []
     this.miners = miners.map(d => {
-      d.type = 'miner'
+      d.type = 'miner',
+      d.balance = 10
+      d.storage = 0
       return d
     })
     this.clients = clients.map(d => {
-      d.type = 'client'
+      d.type = 'client',
+      d.balance = 10
       return d
     })
     this.events = [
@@ -29,19 +33,25 @@ class Filecoin {
   }
 
   RandomEvent () {
-    const event = this.events[1 + Math.floor(Math.random() * (this.events.length - 1))]
+    let event
+    // while (event !== false) {
+    event = this.events[1 + Math.floor(Math.random() * (this.events.length - 1))]
+    // }
     return this[event]()
   }
 
   BroadcastBlock (from) {
+    from = from || this.RandomMiner()
+    from.balance += 10
+
     return {
       name: 'BroadcastBlock',
       data: {
-        links: this.GenerateBroadcast(from || this.RandomMiner())
+        links: this.GenerateBroadcast(from)
       },
       actions: [{
         type: 'send',
-        color: 'gray',
+        color: '#666',
         marker: 'block'
       }]
     }
@@ -87,7 +97,7 @@ class Filecoin {
         name: 'deal'
       }, {
         type: 'line',
-        color: 'black'
+        color: 'green'
       }]
     }
   }
@@ -100,21 +110,33 @@ class Filecoin {
       },
       actions: [{
         type: 'send',
-        color: 'red',
+        color: 'gray',
         marker: 'file'
       }]
     }
   }
 
-  SendPayment (from, to) {
+  SendPayment (from, to, amount) {
+    to = to || this.RandomClient()
+    from = from || this.RandomClient()
+    amount = amount || getRandomInt(1, from.balance)
+
+    if (from.balance == 0) {
+      console.log('no balance!!!!!')
+      return false
+    }
+
+    from.balance -= amount
+    to.balance += amount
+
     return {
       name: 'SendPayment',
       data: {
-        links: [this.GenerateLink(from || this.RandomClient(), to || this.RandomClient())]
+        links: [this.GenerateLink(from, to)]
       },
       actions: [{
         type: 'send',
-        color: 'magenta',
+        color: '#1acacd',
         marker: 'filecoin'
       }]
     }
@@ -153,10 +175,15 @@ class Filecoin {
 var width = 700
 var height = 700
 
-var svg = d3.select('body').append('svg')
+var svg = d3.select('#viz-network .viz').append('svg')
     .attr('id', 'network')
     .attr('width', width)
     .attr('height', height)
+
+var svg2 = d3.select('#viz-chain .viz').append('svg')
+    .attr('id', 'blockchain')
+    .attr('width', 300)
+    .attr('height', 700)
 
 // Draw two arcs, nodes will be around this
 var dim = width - 80
@@ -183,70 +210,6 @@ const translateAlong = (path) => {
       return 'translate(' + p.x + ',' + p.y + ')'
     }
   }
-}
-
-// D3 -- Drawing the graph
-function DrawNodes (graph) {
-  // Data
-  const nodes = graph.nodes.map((node, i) => {
-    var coord = circleCoord(circle, node, i, graph.nodes.length)
-    node.x = coord.x
-    node.y = coord.y
-    return node
-  })
-
-  // Nodes
-  var gnodesD = svg.selectAll('g.gnode')
-    .data(nodes)
-
-  // on creation
-  var gnodes = gnodesD
-    .enter()
-    .append('g')
-    .attr('transform', d => {
-      return 'translate(' + d.x + ',' + d.y + ')'
-    })
-    .attr('class', d => {
-      return 'gnode' + ' type-' + d.type
-    })
-
-  gnodes.append('image')
-  gnodes.append('text').attr('class', 'name')
-  gnodes.append('text').attr('class', 'balance')
-
-  // on removal
-  gnodesD
-    .exit()
-    .remove()
-
-  // on upsert
-  gnodesD
-    .transition()
-    .attr('transform', d => {
-      return 'translate(' + d.x + ',' + d.y + ')'
-    })
-    .attr('class', d => {
-      return 'gnode' + ' type-' + d.type
-    })
-
-  gnodesD.select('image')
-      .attr('href', d => 'img/' + d.type + '.png')
-      .attr('width', 30)
-      .attr('x', -15)
-      .attr('y', -15)
-      .attr('class', (d) => {
-        return 'node'
-      })
-
-  gnodesD.select('text.name')
-      .attr('dy', 25)
-      .attr('dx', -15)
-      .text(d => { return d.id })
-
-  gnodesD.select('text.balance')
-      .attr('dy', -20)
-      .attr('dx', -15)
-      // .text(d => { return d.id })
 }
 
 // -----------------------------------------------------------------------------
@@ -321,7 +284,7 @@ function runLineAction (event, action, data) {
       .attr('x', -10)
       .attr('y', -10)
       .transition()
-        .duration(800)
+        .duration(1500)
         .ease('linear')
         .attrTween('transform', translateAlong(linePath.node()))
         .remove()
@@ -330,7 +293,7 @@ function runLineAction (event, action, data) {
 
   linePath
     .transition()
-      .duration(800)
+      .duration(1500)
       .ease('linear')
       .attr('stroke-dashoffset', function () {
         return 0
@@ -353,7 +316,76 @@ function runLinesAction (event, action) {
   }
 }
 
-function runEvent (event) {
+// D3 -- Drawing the graph
+function DrawNodes (graph) {
+  // Data
+  const nodes = graph.nodes.map((node, i) => {
+    var coord = circleCoord(circle, node, i, graph.nodes.length)
+    node.x = coord.x
+    node.y = coord.y
+    return node
+  })
+
+  // Nodes
+  var gnodesD = svg.selectAll('g.gnode')
+    .data(nodes, function (d) { return d.id })
+
+  // on creation
+  var gnodes = gnodesD
+    .enter()
+    .append('g')
+    .attr('transform', d => {
+      return 'translate(' + d.x + ',' + d.y + ')'
+    })
+    .attr('class', d => {
+      return 'gnode' + ' type-' + d.type
+    })
+
+  gnodes.append('image')
+  gnodes.append('text').attr('class', 'name')
+  gnodes.append('text').attr('class', 'balance')
+    .attr('dy', -20)
+    .attr('dx', 0)
+  gnodes.append('image').attr('class', 'balanceIcon')
+    .attr('href', 'img/filecoin.png')
+    .attr('width', 15)
+    .attr('y', -31)
+    .attr('x', -20)
+
+  // on removal
+  gnodesD
+    .exit()
+    .remove()
+
+  // on upsert
+  let transition = gnodesD
+    .transition()
+    .attr('transform', d => {
+      return 'translate(' + d.x + ',' + d.y + ')'
+    })
+    .attr('class', d => {
+      return 'gnode' + ' type-' + d.type
+    })
+
+  gnodesD.select('image')
+      .attr('href', d => 'img/' + d.type + '.png')
+      .attr('width', 30)
+      .attr('x', -15)
+      .attr('y', -15)
+      .attr('class', (d) => {
+        return 'node'
+      })
+
+  gnodesD.selectAll('text.name')
+      .attr('dy', 25)
+      .attr('dx', -15)
+      .text(d => { return d.id })
+
+  gnodesD.selectAll('text.balance')
+    .text(d => { return d.balance })
+}
+
+function DrawNetworkEvent (event) {
   event.actions.forEach(action => {
     if (action.type === 'send' || action.type === 'line') {
       runLinesAction(event, action)
@@ -364,59 +396,11 @@ function runEvent (event) {
   })
 }
 
-// -----------------------------------------------------------------------------
-
-// Main
-
-function getRandomInt (min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-let minersCount = 10
-let clientsCount = 10
-
-let miners = d3.range(minersCount).map(d => { return {id: 'miner' + d} })
-let clients = d3.range(clientsCount).map(d => { return {id: 'client' + d} })
-let filecoin = new Filecoin(miners, clients)
-
-DrawNodes(filecoin)
-
-// setInterval(() => {
-//   minersCount += getRandomInt(0, 6) - 3
-//   clientsCount += getRandomInt(0, 6) - 3
-//   miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
-//   clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
-//   filecoin = new Filecoin(miners, clients)
-
-//   DrawNodes(filecoin)
-// }, 6000)
-
-const chain = []
-
-setInterval(() => {
-  chain.push({id: chain.length + 1})
-  runEvent(filecoin.BroadcastBlock())
-  DrawBlockchain(chain)
-}, 1000)
-
-setInterval(() => {
-  runEvent(filecoin.RandomEvent())
-}, 500)
-
-// D3 -- Canvas
-var width = 300
-var height = 700
-
-var svg2 = d3.select('body').append('svg')
-    .attr('id', 'blockchain')
-    .attr('width', width)
-    .attr('height', height)
-
-function DrawBlockchain (data) {
-  // const sliced = data.slice(-3)
+function DrawBlockchainEvent (data) {
+  data = data.slice(-10)
   // console.log(sliced)
   lis = svg2.selectAll('g.block')
-    .data(data)
+    .data(data, d => d.id)
 
   let block = lis.enter().append('g')
     .attr('class', d => 'block b-' + d.id)
@@ -436,8 +420,51 @@ function DrawBlockchain (data) {
   block.append('text')
     .attr('x', 60)
     .attr('y', 50)
-
-  lis.selectAll('text')
-    .transition()
     .text(d => 'Block ' + d.id)
 }
+
+// -----------------------------------------------------------------------------
+
+function getRandomInt (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+// -----------------------------------------------------------------------------
+
+// Main
+
+let minersCount = 10
+let clientsCount = 10
+
+let miners = d3.range(minersCount)
+  .map(d => { return {id: 'miner' + d} })
+let clients = d3.range(clientsCount)
+  .map(d => { return {id: 'client' + d} })
+let filecoin = new Filecoin(miners, clients)
+
+DrawNodes(filecoin)
+
+setInterval(() => {
+  filecoin.chain.push({id: filecoin.chain.length + 1})
+  DrawNetworkEvent(filecoin.BroadcastBlock())
+  DrawBlockchainEvent(filecoin.chain)
+  DrawNodes(filecoin)
+}, 3000)
+
+setInterval(() => {
+  let event = filecoin.RandomEvent()
+  if (event) {
+    DrawNetworkEvent(event)
+    DrawNodes(filecoin)
+  }
+}, 500)
+
+// setInterval(() => {
+//   minersCount += getRandomInt(0, 6) - 3
+//   clientsCount += getRandomInt(0, 6) - 3
+//   miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
+//   clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
+//   filecoin = new Filecoin(miners, clients)
+
+//   DrawNodes(filecoin)
+// }, 6000)
