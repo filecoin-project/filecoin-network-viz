@@ -130,6 +130,20 @@ class Filecoin {
     }
   }
 
+  NewBlockMined (from) {
+    from = from || this.RandomMiner()
+    return {
+      name: 'NewBlockMined',
+      data: {
+        actors: [from]
+      },
+      actions: [{
+        type: 'icon',
+        name: 'block'
+      }]
+    }
+  }
+
   SendPayment (from, to, amount) {
     to = to || this.RandomClient()
     from = from || this.RandomClient()
@@ -400,6 +414,7 @@ function DrawNodes (graph) {
 }
 
 function DrawNetworkEvent (event) {
+  console.log(event)
   event.actions.forEach(action => {
     if (action.type === 'send' || action.type === 'line') {
       runLinesAction(event, action)
@@ -412,7 +427,6 @@ function DrawNetworkEvent (event) {
 
 function DrawBlockchainEvent (data) {
   data = data.slice(-10)
-  // console.log(sliced)
   lis = svg2.selectAll('g.block')
     .data(data, d => d.id)
 
@@ -466,7 +480,9 @@ let filecoin = new Filecoin(miners, clients)
 DrawNodes(filecoin)
 
 setInterval(() => {
-  DrawNetworkEvent(filecoin.BroadcastBlock())
+  const blockMiner = filecoin.RandomMiner()
+  DrawNetworkEvent(filecoin.NewBlockMined(blockMiner))
+  DrawNetworkEvent(filecoin.BroadcastBlock(blockMiner))
   DrawBlockchainEvent(filecoin.chain)
   DrawNodes(filecoin)
 }, 3000)
@@ -521,7 +537,6 @@ function prefixSum (orders, type) {
 
 function DrawMarket (data) {
   const asks = prefixSum(data, 'ask')
-  console.log(asks)
   const bids = prefixSum(data, 'bid')
   data = asks.concat(bids)
 
