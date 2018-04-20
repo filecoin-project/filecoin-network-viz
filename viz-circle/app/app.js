@@ -11,6 +11,7 @@
 class Filecoin {
   constructor (miners, clients) {
     this.chain = []
+    this.orderbook = []
     this.miners = miners.map(d => {
       d.type = 'miner',
       d.balance = 10
@@ -57,7 +58,13 @@ class Filecoin {
     }
   }
 
-  AddAsk (actor) {
+  AddAsk (actor, amount, price) {
+    this.orderbook.push({
+      type: 'ask',
+      total: amount || getRandomInt(1, 10),
+      price: price || getRandomInt(12, 30)
+    })
+
     return {
       name: 'AddAsk',
       data: {
@@ -70,7 +77,13 @@ class Filecoin {
     }
   }
 
-  AddBid (actor) {
+  AddBid (actor, amount, price) {
+    this.orderbook.push({
+      type: 'bid',
+      total: amount || getRandomInt(1, 10),
+      price: price || getRandomInt(0, 15)
+    })
+
     return {
       name: 'AddBid',
       data: {
@@ -182,7 +195,7 @@ var svg = d3.select('#viz-network .viz').append('svg')
 
 var svg2 = d3.select('#viz-chain .viz').append('svg')
     .attr('id', 'blockchain')
-    .attr('width', 300)
+    .attr('width', 200)
     .attr('height', 700)
 
 // Draw two arcs, nodes will be around this
@@ -456,6 +469,7 @@ setInterval(() => {
   if (event) {
     DrawNetworkEvent(event)
     DrawNodes(filecoin)
+    DrawMarket(filecoin.orderbook)
   }
 }, 500)
 
@@ -468,3 +482,83 @@ setInterval(() => {
 
 //   DrawNodes(filecoin)
 // }, 6000)
+
+function DrawMarket (data) {
+  data = data.sort((a, b) => (a.price > b.price ? 1 : -1))
+
+  x.domain([
+    d3.min(data, d => d.price),
+    d3.max(data, d => d.price) + 1
+  ])
+  y.domain([0, d3.max(data, d => d.total)])
+
+  const market = g.selectAll('.bar')
+    .data(data)
+
+  market.exit().remove()
+
+  market.enter()
+    .append('rect')
+    .attr('class', 'bar')
+
+  market
+      .attr('x', d => x(d.price))
+      .attr('y', d => y(d.total))
+      .attr('class', d => `bar ${d.type}`)
+      .attr('width', (d, i) => {
+        // is there a next element and do they have the same type:
+        // fill until the next order
+        if (data[i + 1] && data[i + 1].type === d.type) {
+          return x(data[i + 1].price) - x(d.price)
+        // is there a next element and they don't have the same type:
+        // market price valley
+        } else if (data[i + 1]) {
+          return (x.range()[1] - x.range()[0]) / data.length
+        }
+        // this is the last element: fill until the end of the graph
+        return x.range()[1] - x(d.price)
+      })
+      .attr('height', d => height - y(d.total))
+      .on('mouseover', (d) => {
+        tooltip.transition()
+          .duration(500)
+          .style('opacity', 1)
+
+        let html = '<table>'
+
+        Object.keys(d).forEach((key) => {
+          html += `<tr><td><b>${key}</b></td><td>${d[key]}</td></tr>`
+        })
+
+        html += '</table>'
+
+        tooltip.html(html)
+      })
+      .on('mouseout', () =>
+        tooltip.transition().duration(500).style('opacity', 0)
+      )
+}
+
+const target = d3.select('#viz-depth').append('svg')
+const marketWidth = 300
+const marketHeight = target.node().clientHeight
+const x = d3.scale.linear().range([0, marketWidth])
+const y = d3.scale.linear().range([marketHeight, 0])
+
+const g = target.append('g')
+
+g.append('g')
+    .attr('class', 'axis axis--x')
+    .attr('transform', `translate(0,${marketHeight})`)
+//     // .call(d3.svg.axis())
+
+g.append('g')
+    .attr('class', 'axis axis--y')
+//     // .call(d3.axisLeft(y))
+
+// Define the div for the tooltip
+const tooltip = d3.select('#viz-depth').append('div')
+  .attr('class', 'orderbook-visualisation-tooltip')
+  .style('width', '200px')
+  .style('opacity', 0)
+  .html('')

@@ -51,6 +51,9 @@ text {
 #viz-chain {
   float: left;
 }
+#viz-depth {
+  float: left;
+}
 
 .node-action {
   stroke-width: 1.3;
@@ -59,4 +62,27 @@ text {
 .action-MakeDeal {
   stroke-dasharray: 10;
   stroke-width: 1.5;
+}
+
+.bar.bid {
+  fill: rgba(40, 193, 44, 0.3);
+}
+
+.bar.ask {
+  fill: rgba(255, 0, 0, 0.4);
+}
+
+.bar:hover {
+  fill: #337ab7;
+}
+
+.axis--x path {
+  display: none;
+}
+
+.axis--y path {
+  display: none;
+}
+#viz-depth .viz {
+  margin-top: 0;
 }
