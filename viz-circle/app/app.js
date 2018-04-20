@@ -1,12 +1,12 @@
 // const events = {
 //   'NewBlockMined',
-//   'BroadcastBlock',
-//   'AddAsk',
-//   'AddBid',
-//   'MakeDeal',
-//   'SendFile',
+//   'BroadcastBlock', xx
+//   'AddAsk', xx
+//   'AddBid', xx
+//   'MakeDeal', xx
+//   'SendFile', xx
 //   'BroadcastTxn',
-//   'SendPayment'
+//   'SendPayment' xx
 //   // 'Connected',
 //   // 'MinerJoins',
 //   // 'MinerLeaves',
@@ -17,24 +17,68 @@
 const actions = [
   {
     name: 'BroadcastBlock',
-    random (g) {
+    data (g) {
       return g.RandomBroadcastMinerToAll()
     },
-    color: 'gray'
+    actions: [{
+      type: 'send',
+      color: 'gray'
+    }]
+  },
+  {
+    name: 'AddAsk',
+    data (g) {
+      return [g.RandomMiner()]
+    },
+    actions: [{
+      type: 'icon',
+      name: 'ask'
+    }]
+  },
+  {
+    name: 'AddBid',
+    data (g) {
+      return [g.RandomClient()]
+    },
+    actions: [{
+      type: 'icon',
+      name: 'bid'
+    }]
+  },
+  {
+    name: 'MakeDeal',
+    data (g) {
+      return [g.RandomClient(), g.RandomMiner()]
+    },
+    actions: [{
+      type: 'icon',
+      name: 'deal'
+    }
+    // {
+    //   type: 'line',
+    //   color: 'black'
+    // }
+    ]
   },
   {
     name: 'SendFile',
-    random (g) {
+    data (g) {
       return [g.RandomSend(g.RandomClient(), g.RandomMiner())]
     },
-    color: 'blue'
+    actions: [{
+      type: 'send',
+      color: 'red'
+    }]
   },
   {
     name: 'SendPayment',
-    random (g) {
+    data (g) {
       return [g.RandomSend(g.RandomClient(), g.RandomClient())]
     },
-    color: 'magenta'
+    actions: [{
+      type: 'send',
+      color: 'magenta'
+    }]
   }
 ]
 function getRandomAction () {
@@ -66,14 +110,18 @@ class Graph {
   }
 
   RandomBroadcastToMiners () {
-    const from = graph.RandomClient()
+    const from = this.RandomClient()
     return this.miners.map(d => {
       return {source: from, target: d}
     })
   }
 
   RandomBroadcastMinerToAll () {
-    const from = graph.RandomMiner()
+    const from = this.RandomMiner()
+    return this.BroadcastToAll(from)
+  }
+
+  BroadcastToAll (from) {
     const miners = this.miners.map(d => {
       return {source: from, target: d}
     })
@@ -84,7 +132,7 @@ class Graph {
   }
 
   RandomLinks () {
-    return d3.range(graph.nodes.length)
+    return d3.range(this.nodes.length)
       .map(d => {
         return {source: graph.RandomMiner(), target: graph.RandomClient()}
       })
@@ -110,6 +158,7 @@ var circle = svg.append('path')
     .style('fill', '#f5f5f5')
 
 var linesGroup = svg.append('g')
+  .attr('id', 'paths')
 
 // evenly spaces nodes along arc
 const circleCoord = (circle, node, index, num_nodes) => {
@@ -179,14 +228,36 @@ var labels = gnodes.append('text')
     .attr('dx', -15)
     .text(d => { return d.id })
 
-function runAction (g, action) {
-  const actionLinks = action.random(g)
+function runIconAction (data, event, action) {
+  svg.selectAll('g.gnode g image')
+    .data(data).enter()
+    .append('image')
+    .attr('class', action.name)
+    .attr('width', 30)
+    .attr('x', 20)
+    .attr('y', -10)
+    .attr('href', d => 'img/' + action.name + '.png')
+    .attr('transform', d => {
+      return 'translate(' + d.x + ',' + d.y + ')'
+    })
+    .transition()
+      .duration(500)
+      .style('opacity', 1)
+    .transition()
+      .duration(300)
+      .style('opacity', 0)
+      .remove()
+}
 
-  linesGroup.selectAll('path.node-action')
-    .data(actionLinks)
+function runLineAction (data, event, action) {
+  let lineAction = linesGroup
+    .append('g')
+    .attr('class', 'action')
+    .selectAll('path.node-action')
+    .data(data)
     .enter()
     .append('path')
-    .attr('class', 'node-action action-' + action.name)
+    .attr('class', 'node-action action-' + event.name)
     .attr('d', d => {
       var dx = d.target.x - d.source.x,
         dy = d.target.y - d.source.y,
@@ -201,16 +272,22 @@ function runAction (g, action) {
     .attr('stroke', function (d) {
       return action.color
     })
-    .attr('stroke-dasharray', function () {
-      var totalLength = this.getTotalLength()
-      return totalLength + ' ' + totalLength
-    })
-    .attr('stroke-dashoffset', function () {
-      var totalLength = this.getTotalLength()
-      return totalLength
-    })
+
+  if (action.type === 'send') {
+    lineAction = lineAction
+      .attr('stroke-dasharray', function () {
+        var totalLength = this.getTotalLength()
+        return totalLength + ' ' + totalLength
+      })
+      .attr('stroke-dashoffset', function () {
+        var totalLength = this.getTotalLength()
+        return totalLength
+      })
+  }
+
+  lineAction = lineAction
     .transition()
-      .duration(600)
+      .duration(800)
       // .ease('linear')
       .attr('stroke-dashoffset', function () {
         return 0
@@ -221,7 +298,27 @@ function runAction (g, action) {
       .remove()
 }
 
-setInterval(() => {
-  const action = getRandomAction()
-  runAction(graph, action)
-}, 300)
+function runAction (g, event) {
+  event.actions.forEach(action => {
+    if (action.type === 'send' || action.type === 'line') {
+      runLineAction(event.data(g), event, action)
+    }
+    if (action.type === 'icon') {
+      runIconAction(event.data(g), event, action)
+    }
+  })
+}
+
+for (var i = 0; i < graph.miners.length; i++) {
+  runLineAction(graph.BroadcastToAll(graph.miners[i]), actions[0], actions[0].actions[0])
+}
+
+// setInterval(() => {
+//   const action = getRandomAction()
+//   runAction(graph, action)
+// }, 320)
+
+// setInterval(() => {
+//   const action = getRandomAction()
+//   runAction(graph, action)
+// }, 300)
