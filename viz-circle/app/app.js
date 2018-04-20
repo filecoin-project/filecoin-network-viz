@@ -12,10 +12,10 @@ class Filecoin {
   constructor (miners, clients) {
     this.chain = []
     this.orderbook = []
-    this.miners = miners.map(d => {
+    this.miners = miners.map((d, i) => {
       d.type = 'miner',
-      d.balance = 10
-      d.storage = 0
+      d.balance = miners[i].balance || 10
+      d.storage = miners[i].balance || 0
       return d
     })
     this.clients = clients.map(d => {
@@ -44,6 +44,7 @@ class Filecoin {
   BroadcastBlock (from) {
     from = from || this.RandomMiner()
     from.balance += 10
+    this.chain.push({id: filecoin.chain.length + 1, miner: from})
 
     return {
       name: 'BroadcastBlock',
@@ -439,8 +440,8 @@ function DrawBlockchainEvent (data) {
   block.append('text')
     .attr('class', 'block-miner')
     .attr('x', 60)
-    .attr('y', 60)
-    .text(d => 'miner: ' + d.id)
+    .attr('y', 65)
+    .text(d => 'miner: ' + d.miner.id.sliced(0, 10))
 }
 
 // -----------------------------------------------------------------------------
@@ -465,7 +466,6 @@ let filecoin = new Filecoin(miners, clients)
 DrawNodes(filecoin)
 
 setInterval(() => {
-  filecoin.chain.push({id: filecoin.chain.length + 1})
   DrawNetworkEvent(filecoin.BroadcastBlock())
   DrawBlockchainEvent(filecoin.chain)
   DrawNodes(filecoin)
@@ -489,22 +489,6 @@ setInterval(() => {
 
 //   DrawNodes(filecoin)
 // }, 6000)
-
-function prefixSum (A) {
-  var i = 0,
-    l = A.length,
-    P = new Array(l),
-    sum = A[0]
-
-  P[0] = sum
-
-  while (++i < l) {
-    sum += A[i]
-    P[i] = sum
-  }
-
-  return P
-}
 
 function prefixSum (orders, type) {
   let sorted = orders
