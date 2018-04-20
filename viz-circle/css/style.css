@@ -86,3 +86,7 @@ text {
 #viz-depth .viz {
   margin-top: 0;
 }
+.block-miner {
+  fill: #999;
+  font-size: 0.7em;
+}

@@ -61,7 +61,7 @@ class Filecoin {
   AddAsk (actor, amount, price) {
     this.orderbook.push({
       type: 'ask',
-      total: amount || getRandomInt(1, 10),
+      amount: amount || getRandomInt(1, 10),
       price: price || getRandomInt(12, 30)
     })
 
@@ -80,7 +80,7 @@ class Filecoin {
   AddBid (actor, amount, price) {
     this.orderbook.push({
       type: 'bid',
-      total: amount || getRandomInt(1, 10),
+      amount: amount || getRandomInt(1, 10),
       price: price || getRandomInt(0, 15)
     })
 
@@ -431,9 +431,16 @@ function DrawBlockchainEvent (data) {
     .attr('width', 50)
 
   block.append('text')
+    .attr('class', 'block-number')
     .attr('x', 60)
     .attr('y', 50)
     .text(d => 'Block ' + d.id)
+
+  block.append('text')
+    .attr('class', 'block-miner')
+    .attr('x', 60)
+    .attr('y', 60)
+    .text(d => 'miner: ' + d.id)
 }
 
 // -----------------------------------------------------------------------------
@@ -483,7 +490,57 @@ setInterval(() => {
 //   DrawNodes(filecoin)
 // }, 6000)
 
+function prefixSum (A) {
+  var i = 0,
+    l = A.length,
+    P = new Array(l),
+    sum = A[0]
+
+  P[0] = sum
+
+  while (++i < l) {
+    sum += A[i]
+    P[i] = sum
+  }
+
+  return P
+}
+
+function prefixSum (orders, type) {
+  let sorted = orders
+    .filter(d => d.type === type)
+    .sort((a, b) => {
+      if (type == 'ask') {
+        return (a.price > b.price ? 1 : -1)
+      } else {
+        return (a.price < b.price ? 1 : -1)
+      }
+    })
+
+  if (sorted.length === 0) {
+    return []
+  }
+
+  let arr = [{total: 0, price: sorted[0].price, type}]
+  sorted.forEach(d => {
+    const total = d.price * d.amount
+    const last = arr[arr.length - 1]
+    if (last.price === d.price) {
+      last.total += total
+    } else {
+      arr.push({price: d.price, total: last.total + total, type})
+    }
+  })
+
+  return arr
+}
+
 function DrawMarket (data) {
+  const asks = prefixSum(data, 'ask')
+  console.log(asks)
+  const bids = prefixSum(data, 'bid')
+  data = asks.concat(bids)
+
   data = data.sort((a, b) => (a.price > b.price ? 1 : -1))
 
   x.domain([
