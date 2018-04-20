@@ -441,7 +441,7 @@ function DrawBlockchainEvent (data) {
     .attr('class', 'block-miner')
     .attr('x', 60)
     .attr('y', 65)
-    .text(d => 'miner: ' + d.miner.id.sliced(0, 10))
+    .text(d => 'miner: ' + d.miner.id.slice(0, 10))
 }
 
 // -----------------------------------------------------------------------------
