@@ -18,17 +18,22 @@ const actions = [
   {
     name: 'BroadcastBlock',
     data (g) {
-      return g.RandomBroadcastMinerToAll()
+      return {
+        links: g.RandomBroadcastMinerToAll()
+      }
     },
     actions: [{
       type: 'send',
-      color: 'gray'
+      color: 'gray',
+      marker: 'block'
     }]
   },
   {
     name: 'AddAsk',
     data (g) {
-      return [g.RandomMiner()]
+      return {
+        actors: [g.RandomMiner()]
+      }
     },
     actions: [{
       type: 'icon',
@@ -38,7 +43,9 @@ const actions = [
   {
     name: 'AddBid',
     data (g) {
-      return [g.RandomClient()]
+      return {
+        actors: [g.RandomClient()]
+      }
     },
     actions: [{
       type: 'icon',
@@ -48,41 +55,52 @@ const actions = [
   {
     name: 'MakeDeal',
     data (g) {
-      return [g.RandomClient(), g.RandomMiner()]
+      const from = g.RandomClient()
+      const to = g.RandomMiner()
+      return {
+        actors: [from, to],
+        links: [g.Send(from, to)]
+      }
     },
     actions: [{
       type: 'icon',
       name: 'deal'
+    },
+    {
+      type: 'line',
+      color: 'black'
     }
-    // {
-    //   type: 'line',
-    //   color: 'black'
-    // }
     ]
   },
   {
     name: 'SendFile',
     data (g) {
-      return [g.RandomSend(g.RandomClient(), g.RandomMiner())]
+      return {
+        links: [g.Send(g.RandomClient(), g.RandomMiner())]
+      }
     },
     actions: [{
       type: 'send',
-      color: 'red'
+      color: 'red',
+      marker: 'file'
     }]
   },
   {
     name: 'SendPayment',
     data (g) {
-      return [g.RandomSend(g.RandomClient(), g.RandomClient())]
+      return {
+        links: [g.Send(g.RandomClient(), g.RandomClient())]
+      }
     },
     actions: [{
       type: 'send',
-      color: 'magenta'
+      color: 'magenta',
+      marker: 'filecoin'
     }]
   }
 ]
 function getRandomAction () {
-  return actions[Math.floor(Math.random() * actions.length)]
+  return actions[1 + Math.floor(Math.random() * (actions.length - 1))]
 }
 
 class Graph {
@@ -105,7 +123,7 @@ class Graph {
     return this.clients[Math.floor(Math.random() * this.clients.length)]
   }
 
-  RandomSend (from, to) {
+  Send (from, to) {
     return {source: from, target: to}
   }
 
@@ -229,8 +247,8 @@ var labels = gnodes.append('text')
     .text(d => { return d.id })
 
 function runIconAction (data, event, action) {
-  svg.selectAll('g.gnode g image')
-    .data(data).enter()
+  svg.selectAll('g.gnode g image.new')
+    .data(data.actors).enter()
     .append('image')
     .attr('class', action.name)
     .attr('width', 30)
@@ -241,21 +259,34 @@ function runIconAction (data, event, action) {
       return 'translate(' + d.x + ',' + d.y + ')'
     })
     .transition()
-      .duration(500)
+      .duration(800)
+      .ease('linear')
       .style('opacity', 1)
     .transition()
       .duration(300)
+      .ease('linear')
       .style('opacity', 0)
       .remove()
 }
 
+function translateAlong (path) {
+  var l = path.getTotalLength()
+  return function (i) {
+    return function (t) {
+      var p = path.getPointAtLength(t * l)
+      return 'translate(' + p.x + ',' + p.y + ')'
+    }
+  }
+}
+
 function runLineAction (data, event, action) {
   let lineAction = linesGroup
-    .append('g')
     .attr('class', 'action')
-    .selectAll('path.node-action')
-    .data(data)
+    .selectAll('path.node-action.new')
+    .data(data.links)
     .enter()
+
+  let linePath = lineAction
     .append('path')
     .attr('class', 'node-action action-' + event.name)
     .attr('d', d => {
@@ -274,7 +305,7 @@ function runLineAction (data, event, action) {
     })
 
   if (action.type === 'send') {
-    lineAction = lineAction
+    linePath = linePath
       .attr('stroke-dasharray', function () {
         var totalLength = this.getTotalLength()
         return totalLength + ' ' + totalLength
@@ -283,42 +314,68 @@ function runLineAction (data, event, action) {
         var totalLength = this.getTotalLength()
         return totalLength
       })
+
+    if (action.marker) {
+      let lineMarker = lineAction
+      .append('image')
+      .attr('class', 'marker')
+      .attr('href', 'img/' + action.marker + '.png')
+      .attr('width', 20)
+      .attr('x', -10)
+      .attr('y', -10)
+      .transition()
+        .duration(800)
+        .ease('linear')
+        .attrTween('transform', translateAlong(linePath.node()))
+        .remove()
+    }
   }
 
-  lineAction = lineAction
+  linePath
     .transition()
       .duration(800)
-      // .ease('linear')
+      .ease('linear')
       .attr('stroke-dashoffset', function () {
         return 0
       })
     .transition()
       .duration(300)
+      .ease('linear')
       .style('opacity', 0)
       .remove()
 }
 
 function runAction (g, event) {
+  const data = event.data(g)
   event.actions.forEach(action => {
     if (action.type === 'send' || action.type === 'line') {
-      runLineAction(event.data(g), event, action)
+      // TODO: little hack, without this we only have one marker per path
+      if (data.links.length > 1) {
+        data.links.forEach(d => {
+          runLineAction({links: [d]}, event, action)
+        })
+      } else {
+        runLineAction(data, event, action)
+      }
     }
     if (action.type === 'icon') {
-      runIconAction(event.data(g), event, action)
+      runIconAction(data, event, action)
     }
   })
 }
 
-for (var i = 0; i < graph.miners.length; i++) {
-  runLineAction(graph.BroadcastToAll(graph.miners[i]), actions[0], actions[0].actions[0])
-}
+// for (var i = 0; i < graph.miners.length; i++) {
+//   runLineAction(graph.BroadcastToAll(graph.miners[i]), actions[0], actions[0].actions[0])
+// }
 
-// setInterval(() => {
-//   const action = getRandomAction()
-//   runAction(graph, action)
-// }, 320)
+// runAction(graph, actions[0])
 
-// setInterval(() => {
-//   const action = getRandomAction()
-//   runAction(graph, action)
-// }, 300)
+setInterval(() => {
+  const action = actions[0]
+  runAction(graph, action)
+}, 5000)
+
+setInterval(() => {
+  const action = getRandomAction()
+  runAction(graph, action)
+}, 310)
