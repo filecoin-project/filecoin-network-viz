@@ -1,109 +1,14 @@
-// const events = {
-//   'NewBlockMined',
-//   'BroadcastBlock', xx
-//   'AddAsk', xx
-//   'AddBid', xx
-//   'MakeDeal', xx
-//   'SendFile', xx
-//   'BroadcastTxn',
-//   'SendPayment' xx
-//   // 'Connected',
-//   // 'MinerJoins',
-//   // 'MinerLeaves',
-//   // 'ClientJoins',
-//   // 'ClientLeaves'
-// }
+// Events missing
+// 'NewBlockMined',
+// 'BroadcastTxn',
+// 'Connected',
+// 'MinerJoins',
+// 'MinerLeaves',
+// 'ClientJoins',
+// 'ClientLeaves'
 
-const actions = [
-  {
-    name: 'BroadcastBlock',
-    data (g) {
-      return {
-        links: g.RandomBroadcastMinerToAll()
-      }
-    },
-    actions: [{
-      type: 'send',
-      color: 'gray',
-      marker: 'block'
-    }]
-  },
-  {
-    name: 'AddAsk',
-    data (g) {
-      return {
-        actors: [g.RandomMiner()]
-      }
-    },
-    actions: [{
-      type: 'icon',
-      name: 'ask'
-    }]
-  },
-  {
-    name: 'AddBid',
-    data (g) {
-      return {
-        actors: [g.RandomClient()]
-      }
-    },
-    actions: [{
-      type: 'icon',
-      name: 'bid'
-    }]
-  },
-  {
-    name: 'MakeDeal',
-    data (g) {
-      const from = g.RandomClient()
-      const to = g.RandomMiner()
-      return {
-        actors: [from, to],
-        links: [g.Send(from, to)]
-      }
-    },
-    actions: [{
-      type: 'icon',
-      name: 'deal'
-    },
-    {
-      type: 'line',
-      color: 'black'
-    }
-    ]
-  },
-  {
-    name: 'SendFile',
-    data (g) {
-      return {
-        links: [g.Send(g.RandomClient(), g.RandomMiner())]
-      }
-    },
-    actions: [{
-      type: 'send',
-      color: 'red',
-      marker: 'file'
-    }]
-  },
-  {
-    name: 'SendPayment',
-    data (g) {
-      return {
-        links: [g.Send(g.RandomClient(), g.RandomClient())]
-      }
-    },
-    actions: [{
-      type: 'send',
-      color: 'magenta',
-      marker: 'filecoin'
-    }]
-  }
-]
-function getRandomAction () {
-  return actions[1 + Math.floor(Math.random() * (actions.length - 1))]
-}
-
-class Graph {
+// This object has the list of miners, clients and possible actions
+class Filecoin {
   constructor (miners, clients) {
     this.miners = miners.map(d => {
       d.type = 'miner'
@@ -113,6 +18,120 @@ class Graph {
       d.type = 'client'
       return d
     })
+    this.events = [
+      'BroadcastBlock',
+      'AddAsk',
+      'AddBid',
+      'MakeDeal',
+      'SendFile',
+      'SendPayment'
+    ]
+  }
+
+  RandomEvent () {
+    const event = this.events[1 + Math.floor(Math.random() * (this.events.length - 1))]
+    return this[event]()
+  }
+
+  BroadcastBlock (from) {
+    return {
+      name: 'BroadcastBlock',
+      data: {
+        links: this.GenerateBroadcast(from || this.RandomMiner())
+      },
+      actions: [{
+        type: 'send',
+        color: 'gray',
+        marker: 'block'
+      }]
+    }
+  }
+
+  AddAsk (actor) {
+    return {
+      name: 'AddAsk',
+      data: {
+        actors: [actor || this.RandomMiner()]
+      },
+      actions: [{
+        type: 'icon',
+        name: 'ask'
+      }]
+    }
+  }
+
+  AddBid (actor) {
+    return {
+      name: 'AddBid',
+      data: {
+        actors: [actor || this.RandomClient()]
+      },
+      actions: [{
+        type: 'icon',
+        name: 'bid'
+      }]
+    }
+  }
+
+  MakeDeal (from, to) {
+    from = from || this.RandomClient()
+    to = to || this.RandomMiner()
+    return {
+      name: 'MakeDeal',
+      data: {
+        actors: [from, to],
+        links: [this.GenerateLink(from, to)]
+      },
+      actions: [{
+        type: 'icon',
+        name: 'deal'
+      }, {
+        type: 'line',
+        color: 'black'
+      }]
+    }
+  }
+
+  SendFile (from, to) {
+    return {
+      name: 'SendFile',
+      data: {
+        links: [this.GenerateLink(from || this.RandomClient(), to || this.RandomMiner())]
+      },
+      actions: [{
+        type: 'send',
+        color: 'red',
+        marker: 'file'
+      }]
+    }
+  }
+
+  SendPayment (from, to) {
+    return {
+      name: 'SendPayment',
+      data: {
+        links: [this.GenerateLink(from || this.RandomClient(), to || this.RandomClient())]
+      },
+      actions: [{
+        type: 'send',
+        color: 'magenta',
+        marker: 'filecoin'
+      }]
+    }
+  }
+
+  GenerateLink (from, to) {
+    return {source: from, target: to}
+  }
+
+  GenerateBroadcast (from) {
+    const miners = this.miners.map(d => {
+      return {source: from, target: d}
+    })
+    const clients = this.clients.map(d => {
+      return {source: from, target: d}
+    })
+    return miners.concat(clients)
   }
 
   RandomMiner () {
@@ -123,43 +142,12 @@ class Graph {
     return this.clients[Math.floor(Math.random() * this.clients.length)]
   }
 
-  Send (from, to) {
-    return {source: from, target: to}
-  }
-
-  RandomBroadcastToMiners () {
-    const from = this.RandomClient()
-    return this.miners.map(d => {
-      return {source: from, target: d}
-    })
-  }
-
-  RandomBroadcastMinerToAll () {
-    const from = this.RandomMiner()
-    return this.BroadcastToAll(from)
-  }
-
-  BroadcastToAll (from) {
-    const miners = this.miners.map(d => {
-      return {source: from, target: d}
-    })
-    const clients = this.clients.map(d => {
-      return {source: from, target: d}
-    })
-    return miners.concat(clients)
-  }
-
-  RandomLinks () {
-    return d3.range(this.nodes.length)
-      .map(d => {
-        return {source: graph.RandomMiner(), target: graph.RandomClient()}
-      })
-  }
-
   get nodes () {
     return this.miners.concat(this.clients)
   }
 }
+
+// -----------------------------------------------------------------------------
 
 // D3 -- Canvas
 var width = 700
@@ -186,69 +174,57 @@ const circleCoord = (circle, node, index, num_nodes) => {
   return circle.node().getPointAtLength(circumference - position)
 }
 
+const translateAlong = (path) => {
+  var l = path.getTotalLength()
+  return (i) => {
+    return (t) => {
+      var p = path.getPointAtLength(t * l)
+      return 'translate(' + p.x + ',' + p.y + ')'
+    }
+  }
+}
+
 // D3 -- Drawing the graph
-
-// set up a graph
-const miners = d3.range(10).map(d => { return {id: 'miner' + d} })
-const clients = d3.range(10).map(d => { return {id: 'client' + d} })
-const graph = new Graph(miners, clients)
-
-// Data
-const nodes = graph.nodes.map((node, i) => {
-  var coord = circleCoord(circle, node, i, graph.nodes.length)
-  node.x = coord.x
-  node.y = coord.y
-  return node
-})
-const links = graph.RandomLinks()
-
-// Lines
-
-// var lines = svg.selectAll('path.node-link')
-//   .data(links).enter()
-//   .append('path')
-//   .attr('class', 'node-link')
-//   .attr('d', d => {
-//     var dx = d.target.x - d.source.x,
-//       dy = d.target.y - d.source.y,
-//       dr = Math.sqrt(dx * dx + dy * dy)
-//     return 'M' +
-//           d.source.x + ',' +
-//           d.source.y + 'A' +
-//           dr + ',' + dr + ' 0 0,1 ' +
-//           d.target.x + ',' +
-//           d.target.y
-//   })
-
-// Nodes
-
-var gnodes = svg.selectAll('g.gnode')
-  .data(nodes).enter()
-  .append('g')
-  .attr('transform', d => {
-    return 'translate(' + d.x + ',' + d.y + ')'
-  })
-  .attr('class', d => {
-    return 'gnode' + ' type-' + d.type
+function DrawNodes (graph) {
+  // Data
+  const nodes = graph.nodes.map((node, i) => {
+    var coord = circleCoord(circle, node, i, graph.nodes.length)
+    node.x = coord.x
+    node.y = coord.y
+    return node
   })
 
-var node = gnodes.append('image')
-    .attr('href', d => 'img/' + d.type + '.png')
-    .attr('width', 30)
-    .attr('x', -15)
-    .attr('y', -15)
-    .attr('class', (d) => {
-      return 'node'
+  // Nodes
+  var gnodes = svg.selectAll('g.gnode')
+    .data(nodes).enter()
+    .append('g')
+    .attr('transform', d => {
+      return 'translate(' + d.x + ',' + d.y + ')'
+    })
+    .attr('class', d => {
+      return 'gnode' + ' type-' + d.type
     })
 
-var labels = gnodes.append('text')
-    .attr('dy', 25)
-    .attr('dx', -15)
-    .text(d => { return d.id })
+  var node = gnodes.append('image')
+      .attr('href', d => 'img/' + d.type + '.png')
+      .attr('width', 30)
+      .attr('x', -15)
+      .attr('y', -15)
+      .attr('class', (d) => {
+        return 'node'
+      })
 
-function runIconAction (data, event, action) {
+  var labels = gnodes.append('text')
+      .attr('dy', 25)
+      .attr('dx', -15)
+      .text(d => { return d.id })
+}
+
+// Running actions
+
+function runIconAction (event, action) {
   svg.selectAll('g.gnode g image.new')
-    .data(data.actors).enter()
+    .data(event.data.actors).enter()
     .append('image')
     .attr('class', action.name)
     .attr('width', 30)
@@ -269,17 +245,7 @@ function runIconAction (data, event, action) {
       .remove()
 }
 
-function translateAlong (path) {
-  var l = path.getTotalLength()
-  return function (i) {
-    return function (t) {
-      var p = path.getPointAtLength(t * l)
-      return 'translate(' + p.x + ',' + p.y + ')'
-    }
-  }
-}
-
-function runLineAction (data, event, action) {
+function runLineAction (event, action, data) {
   let lineAction = linesGroup
     .attr('class', 'action')
     .selectAll('path.node-action.new')
@@ -345,37 +311,40 @@ function runLineAction (data, event, action) {
       .remove()
 }
 
-function runAction (g, event) {
-  const data = event.data(g)
+function runLinesAction (event, action) {
+  // TODO: little hack, without this we only have one marker per path
+  if (event.data.links.length > 1) {
+    event.data.links.forEach(d => {
+      runLineAction(event, action, {links: [d]})
+    })
+  } else {
+    runLineAction(event, action, event.data)
+  }
+}
+
+function runEvent (event) {
   event.actions.forEach(action => {
     if (action.type === 'send' || action.type === 'line') {
-      // TODO: little hack, without this we only have one marker per path
-      if (data.links.length > 1) {
-        data.links.forEach(d => {
-          runLineAction({links: [d]}, event, action)
-        })
-      } else {
-        runLineAction(data, event, action)
-      }
+      runLinesAction(event, action)
     }
     if (action.type === 'icon') {
-      runIconAction(data, event, action)
+      runIconAction(event, action)
     }
   })
 }
 
-// for (var i = 0; i < graph.miners.length; i++) {
-//   runLineAction(graph.BroadcastToAll(graph.miners[i]), actions[0], actions[0].actions[0])
-// }
+// Main
 
-// runAction(graph, actions[0])
+const miners = d3.range(10).map(d => { return {id: 'miner' + d} })
+const clients = d3.range(10).map(d => { return {id: 'client' + d} })
+const filecoin = new Filecoin(miners, clients)
+
+DrawNodes(filecoin)
 
 setInterval(() => {
-  const action = actions[0]
-  runAction(graph, action)
+  runEvent(filecoin.BroadcastBlock())
 }, 5000)
 
 setInterval(() => {
-  const action = getRandomAction()
-  runAction(graph, action)
+  runEvent(filecoin.RandomEvent())
 }, 310)
