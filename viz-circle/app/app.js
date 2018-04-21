@@ -58,7 +58,7 @@ class Filecoin {
     return {
       name: 'MinerJoins',
       data: {},
-      actions: {}
+      actions: []
     }
   }
 
@@ -656,34 +656,36 @@ function getRandomInt (min, max) {
 
 // Main
 
-let minersCount = 10
-let clientsCount = 10
+// let minersCount = 10
+// let clientsCount = 10
 
-// Fake parts: start
-let miners = d3.range(minersCount)
-  .map(d => { return {id: 'miner' + d} })
-let clients = d3.range(clientsCount)
-  .map(d => { return {id: 'client' + d} })
-let filecoin = new Filecoin(miners, clients)
+// // Fake parts: start
+// let miners = d3.range(minersCount)
+//   .map(d => { return {id: 'miner' + d} })
+// let clients = d3.range(clientsCount)
+//   .map(d => { return {id: 'client' + d} })
+// let filecoin = new Filecoin(miners, clients)
 
-DrawNodes(filecoin)
+// DrawNodes(filecoin)
 
-setInterval(() => {
-  const blockMiner = filecoin.RandomMiner()
-  DrawNetworkEvent(filecoin.NewBlockMined({from: blockMiner.id }))
-  DrawNetworkEvent(filecoin.BroadcastBlock({from: blockMiner.id}))
-  DrawBlockchainEvent(filecoin.chain)
-  DrawNodes(filecoin)
-}, 3000)
+// setInterval(() => {
+//   const blockMiner = filecoin.RandomMiner()
+//   DrawNetworkEvent(filecoin.NewBlockMined({from: blockMiner.id }))
+//   DrawNetworkEvent(filecoin.BroadcastBlock({from: blockMiner.id}))
+//   DrawBlockchainEvent(filecoin.chain)
+//   DrawNodes(filecoin)
+// }, 3000)
 
-setInterval(() => {
-  let event = filecoin.RandomEvent()
-  if (event) {
-    DrawNetworkEvent(event)
-    DrawNodes(filecoin)
-    DrawMarket(filecoin.orderbook)
-  }
-}, 500)
+// setInterval(() => {
+//   let event = filecoin.RandomEvent()
+//   if (event) {
+//     DrawNetworkEvent(event)
+//     DrawNodes(filecoin)
+//     DrawMarket(filecoin.orderbook)
+//   }
+// }, 500)
+
+
 
 // setInterval(() => {
 //   minersCount += getRandomInt(0, 6) - 3
@@ -699,30 +701,39 @@ setInterval(() => {
 
 // Live parts: start
 
-// let filecoin = new Filecoin()
+let filecoin = new Filecoin()
 
-// function GetLiveFeed (cb) {
-//   fetch('/api')  // make a fetch request to a NDJSON stream service
-//     .then((response) => {
-//       return canNdjsonStream(response.body) // ndjsonStream parses the response.body
-//     }).then((stream) => {
-//       let read
-//       stream.getReader().read().then(read = (result) => {
-//         if (result.done) return
-//         cb(result)
-//         stream.getReader().read().then(read) // recurse through the stream
-//       })
-//     })
-// }
+function GetLiveFeed (cb) {
 
-// window.onload = function () {
-//   GetLiveFeed((res) => {
-//     const entry = res.value
-//     if (filecoin[entry.type]) {
-//       const event = filecoin[entry.type](entry)
-//       DrawNetworkEvent(event)
-//       DrawNodes(filecoin)
-//       DrawMarket(filecoin.orderbook)
-//     }
-//   })
-// }
+  request.get("http://127.0.0.1:7002/logs")
+    .pipe(ndjson.parse())
+    .on('data', function(obj) {
+      console.log("ndjson got")
+      console.log(obj)
+      cb(obj)
+    })
+
+  // fetch('/logs')  // make a fetch request to a NDJSON stream service
+  //   .then((response) => {
+  //     return canNdjsonStream(response.body) // ndjsonStream parses the response.body
+  //   }).then((stream) => {
+  //     let read
+  //     stream.getReader().read().then(read = (result) => {
+  //       if (result.done) return
+  //       cb(result)
+  //       stream.getReader().read().then(read) // recurse through the stream
+  //     })
+  //   })
+}
+
+window.onload = function () {
+  GetLiveFeed((res) => {
+    const entry = res
+    if (filecoin[entry.type]) {
+      const event = filecoin[entry.type](entry)
+      DrawNetworkEvent(event)
+      DrawNodes(filecoin)
+      DrawMarket(filecoin.orderbook)
+    }
+  })
+}
