@@ -9,7 +9,7 @@
 
 // This object has the list of miners, clients and possible actions
 class Filecoin {
-  constructor (miners, clients) {
+  constructor (miners = [], clients = []) {
     this.chain = []
     this.orderbook = []
     this.miners = miners.map((d, i) => {
@@ -269,7 +269,8 @@ class Filecoin {
 
 // -----------------------------------------------------------------------------
 
-// D3 -- Canvas
+// Canvas for Network
+
 var width = 700
 var height = 700
 
@@ -277,11 +278,6 @@ var svg = d3.select('#viz-network .viz').append('svg')
     .attr('id', 'network')
     .attr('width', width)
     .attr('height', height)
-
-var svg2 = d3.select('#viz-chain .viz').append('svg')
-    .attr('id', 'blockchain')
-    .attr('width', 200)
-    .attr('height', 700)
 
 // Draw two arcs, nodes will be around this
 var dim = width - 80
@@ -309,6 +305,39 @@ const translateAlong = (path) => {
     }
   }
 }
+
+// Canvas for Chain
+
+var svg2 = d3.select('#viz-chain .viz').append('svg')
+    .attr('id', 'blockchain')
+    .attr('width', 200)
+    .attr('height', 700)
+
+// Canvas for Market
+
+const target = d3.select('#viz-depth').append('svg')
+const marketWidth = 300
+const marketHeight = target.node().clientHeight
+const x = d3.scale.linear().range([0, marketWidth])
+const y = d3.scale.linear().range([marketHeight, 0])
+
+const g = target.append('g')
+
+g.append('g')
+    .attr('class', 'axis axis--x')
+    .attr('transform', `translate(0,${marketHeight})`)
+//     // .call(d3.svg.axis())
+
+g.append('g')
+    .attr('class', 'axis axis--y')
+//     // .call(d3.axisLeft(y))
+
+// Define the div for the tooltip
+const tooltip = d3.select('#viz-depth').append('div')
+  .attr('class', 'orderbook-visualisation-tooltip')
+  .style('width', '200px')
+  .style('opacity', 0)
+  .html('')
 
 // -----------------------------------------------------------------------------
 
@@ -528,54 +557,6 @@ function DrawBlockchainEvent (data) {
     .text(d => 'miner: ' + d.miner.id.slice(0, 10))
 }
 
-// -----------------------------------------------------------------------------
-
-function getRandomInt (min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-// -----------------------------------------------------------------------------
-
-// Main
-
-let minersCount = 10
-let clientsCount = 10
-
-let miners = d3.range(minersCount)
-  .map(d => { return {id: 'miner' + d} })
-let clients = d3.range(clientsCount)
-  .map(d => { return {id: 'client' + d} })
-let filecoin = new Filecoin(miners, clients)
-
-DrawNodes(filecoin)
-
-setInterval(() => {
-  const blockMiner = filecoin.RandomMiner()
-  DrawNetworkEvent(filecoin.NewBlockMined({from: blockMiner.id }))
-  DrawNetworkEvent(filecoin.BroadcastBlock({from: blockMiner.id}))
-  DrawBlockchainEvent(filecoin.chain)
-  DrawNodes(filecoin)
-}, 3000)
-
-setInterval(() => {
-  let event = filecoin.RandomEvent()
-  if (event) {
-    DrawNetworkEvent(event)
-    DrawNodes(filecoin)
-    DrawMarket(filecoin.orderbook)
-  }
-}, 500)
-
-// setInterval(() => {
-//   minersCount += getRandomInt(0, 6) - 3
-//   clientsCount += getRandomInt(0, 6) - 3
-//   miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
-//   clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
-//   filecoin = new Filecoin(miners, clients)
-
-//   DrawNodes(filecoin)
-// }, 6000)
-
 function prefixSum (orders, type) {
   let sorted = orders
     .filter(d => d.type === type)
@@ -665,29 +646,60 @@ function DrawMarket (data) {
       )
 }
 
-const target = d3.select('#viz-depth').append('svg')
-const marketWidth = 300
-const marketHeight = target.node().clientHeight
-const x = d3.scale.linear().range([0, marketWidth])
-const y = d3.scale.linear().range([marketHeight, 0])
+// -----------------------------------------------------------------------------
 
-const g = target.append('g')
+function getRandomInt (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
 
-g.append('g')
-    .attr('class', 'axis axis--x')
-    .attr('transform', `translate(0,${marketHeight})`)
-//     // .call(d3.svg.axis())
+// -----------------------------------------------------------------------------
 
-g.append('g')
-    .attr('class', 'axis axis--y')
-//     // .call(d3.axisLeft(y))
+// Main
 
-// Define the div for the tooltip
-const tooltip = d3.select('#viz-depth').append('div')
-  .attr('class', 'orderbook-visualisation-tooltip')
-  .style('width', '200px')
-  .style('opacity', 0)
-  .html('')
+let minersCount = 10
+let clientsCount = 10
+
+// Fake parts: start
+let miners = d3.range(minersCount)
+  .map(d => { return {id: 'miner' + d} })
+let clients = d3.range(clientsCount)
+  .map(d => { return {id: 'client' + d} })
+let filecoin = new Filecoin(miners, clients)
+
+DrawNodes(filecoin)
+
+setInterval(() => {
+  const blockMiner = filecoin.RandomMiner()
+  DrawNetworkEvent(filecoin.NewBlockMined({from: blockMiner.id }))
+  DrawNetworkEvent(filecoin.BroadcastBlock({from: blockMiner.id}))
+  DrawBlockchainEvent(filecoin.chain)
+  DrawNodes(filecoin)
+}, 3000)
+
+setInterval(() => {
+  let event = filecoin.RandomEvent()
+  if (event) {
+    DrawNetworkEvent(event)
+    DrawNodes(filecoin)
+    DrawMarket(filecoin.orderbook)
+  }
+}, 500)
+
+// setInterval(() => {
+//   minersCount += getRandomInt(0, 6) - 3
+//   clientsCount += getRandomInt(0, 6) - 3
+//   miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
+//   clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
+//   filecoin = new Filecoin(miners, clients)
+
+//   DrawNodes(filecoin)
+// }, 6000)
+
+// Fake parts: end
+
+// Live parts: start
+
+// let filecoin = new Filecoin()
 
 // function GetLiveFeed (cb) {
 //   fetch('/api')  // make a fetch request to a NDJSON stream service
@@ -705,7 +717,12 @@ const tooltip = d3.select('#viz-depth').append('div')
 
 // window.onload = function () {
 //   GetLiveFeed((res) => {
-//     const event = res.value
-//     filecoin[event.type](event)
+//     const entry = res.value
+//     if (filecoin[entry.type]) {
+//       const event = filecoin[entry.type](entry)
+//       DrawNetworkEvent(event)
+//       DrawNodes(filecoin)
+//       DrawMarket(filecoin.orderbook)
+//     }
 //   })
 // }
