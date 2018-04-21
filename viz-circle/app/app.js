@@ -506,7 +506,7 @@ function DrawNodes (graph) {
   gnodesD.selectAll('text.name')
       .attr('dy', 25)
       .attr('dx', -15)
-      .text(d => { return d.id })
+      .text(d => { return d.id.slice(0, 10) })
 
   gnodesD.selectAll('text.balance')
     .text(d => { return d.balance })
@@ -685,8 +685,6 @@ function getRandomInt (min, max) {
 //   }
 // }, 500)
 
-
-
 // setInterval(() => {
 //   minersCount += getRandomInt(0, 6) - 3
 //   clientsCount += getRandomInt(0, 6) - 3
@@ -704,11 +702,10 @@ function getRandomInt (min, max) {
 let filecoin = new Filecoin()
 
 function GetLiveFeed (cb) {
-
-  request.get("http://127.0.0.1:7002/logs")
+  request.get('http://127.0.0.1:7002/logs')
     .pipe(ndjson.parse())
-    .on('data', function(obj) {
-      console.log("ndjson got")
+    .on('data', function (obj) {
+      console.log('ndjson got')
       console.log(obj)
       cb(obj)
     })
