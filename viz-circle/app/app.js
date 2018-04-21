@@ -80,11 +80,11 @@ class Filecoin {
 
   BroadcastBlock (obj = {}) {
     const {from, block} = obj
-    if (!from) console.log('ops: miner not passed')
-    if (!block) console.log('ops: id not passed')
+    if (!from) console.log('ops: from not passed')
+    if (!block) console.log('ops: block not passed')
 
     const miner = this.GetNode(from) || this.RandomMiner()
-    const id = block || 'fake' + Date.now()
+    const id = block || (Date.now() + '').split('').reverse().join('')
 
     miner.balance += 10
     this.chain.push({id, miner})
@@ -104,7 +104,7 @@ class Filecoin {
 
   AddAsk (obj = {}) {
     const {from, price, size} = obj
-    if (!from) console.log('ops: miner not passed')
+    if (!from) console.log('ops: from not passed')
     const actor = this.GetNode(from) || this.RandomMiner()
 
     this.orderbook.push({
@@ -127,7 +127,7 @@ class Filecoin {
 
   AddBid (obj = {}) {
     const {from, price, size} = obj
-    if (!from) console.log('ops: miner not passed')
+    if (!from) console.log('ops: from not passed')
     const actor = this.GetNode(from) || this.RandomClient()
 
     this.orderbook.push({
@@ -150,8 +150,8 @@ class Filecoin {
 
   MakeDeal (obj = {}) {
     let {from, to} = obj
-    if (!from) console.log('ops: miner not passed')
-    if (!to) console.log('ops: miner not passed')
+    if (!from) console.log('ops: from not passed')
+    if (!to) console.log('ops: to not passed')
 
     from = this.GetNode(from) || this.RandomClient()
     to = this.GetNode(to) || this.RandomMiner()
@@ -174,8 +174,8 @@ class Filecoin {
 
   SendFile (obj = {}) {
     let {from, to} = obj
-    if (!from) console.log('ops: miner not passed')
-    if (!to) console.log('ops: miner not passed')
+    if (!from) console.log('ops: from not passed')
+    if (!to) console.log('ops: to not passed')
 
     from = this.GetNode(from) || this.RandomClient()
     to = this.GetNode(to) || this.RandomMiner()
@@ -194,7 +194,7 @@ class Filecoin {
 
   NewBlockMined (obj = {}) {
     let {from} = obj
-    if (!from) console.log('ops: miner not passed')
+    if (!from) console.log('ops: from not passed')
 
     from = this.GetNode(from) || this.RandomMiner()
 
@@ -212,8 +212,8 @@ class Filecoin {
 
   SendPayment (obj = {}) {
     let {from, to, value} = obj
-    if (!from) console.log('ops: miner not passed')
-    if (!to) console.log('ops: miner not passed')
+    if (!from) console.log('ops: from not passed')
+    if (!to) console.log('ops: to not passed')
 
     to = this.GetNode(to) || this.RandomClient()
     from = this.GetNode(from) || this.RandomClient()
