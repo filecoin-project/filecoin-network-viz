@@ -251,7 +251,9 @@ class Filecoin {
     const clients = this.clients.map(d => {
       return {source: from, target: d}
     })
-    return miners.concat(clients)
+    return miners.concat(clients).filter(d => {
+      return d.target.id !== from.id
+    })
   }
 
   RandomMiner () {
