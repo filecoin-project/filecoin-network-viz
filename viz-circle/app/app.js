@@ -33,6 +33,10 @@ class Filecoin {
     ]
   }
 
+  GetNode (address) {
+    return this.nodes.find(d => d.id === address)
+  }
+
   RandomEvent () {
     let event
     // while (event !== false) {
@@ -41,15 +45,54 @@ class Filecoin {
     return this[event]()
   }
 
-  BroadcastBlock (from) {
-    from = from || this.RandomMiner()
-    from.balance += 10
-    this.chain.push({id: filecoin.chain.length + 1, miner: from})
+  MinerJoins (obj = {}) {
+    const {from, balance, storage} = obj
+
+    this.miners.push({
+      type: 'miner',
+      id: from,
+      balance: balance || 0,
+      storage: storage || 0
+    })
+
+    return {
+      name: 'MinerJoins',
+      data: {},
+      actions: {}
+    }
+  }
+
+  ClientJoins (obj = {}) {
+    const {from, balance, storage} = obj
+
+    this.client.push({
+      type: 'client',
+      id: from,
+      balance: balance || 0
+    })
+
+    return {
+      name: 'ClientJoins',
+      data: {},
+      actions: {}
+    }
+  }
+
+  BroadcastBlock (obj = {}) {
+    const {from, block} = obj
+    if (!from) console.log('ops: miner not passed')
+    if (!block) console.log('ops: id not passed')
+
+    const miner = this.GetNode(from) || this.RandomMiner()
+    const id = block || 'fake' + Date.now()
+
+    miner.balance += 10
+    this.chain.push({id, miner})
 
     return {
       name: 'BroadcastBlock',
       data: {
-        links: this.GenerateBroadcast(from)
+        links: this.GenerateBroadcast(miner)
       },
       actions: [{
         type: 'send',
@@ -59,17 +102,21 @@ class Filecoin {
     }
   }
 
-  AddAsk (actor, amount, price) {
+  AddAsk (obj = {}) {
+    const {from, price, size} = obj
+    if (!from) console.log('ops: miner not passed')
+    const actor = this.GetNode(from) || this.RandomMiner()
+
     this.orderbook.push({
       type: 'ask',
-      amount: amount || getRandomInt(1, 10),
+      size: size || getRandomInt(1, 10),
       price: price || getRandomInt(12, 30)
     })
 
     return {
       name: 'AddAsk',
       data: {
-        actors: [actor || this.RandomMiner()]
+        actors: [actor]
       },
       actions: [{
         type: 'icon',
@@ -78,17 +125,21 @@ class Filecoin {
     }
   }
 
-  AddBid (actor, amount, price) {
+  AddBid (obj = {}) {
+    const {from, price, size} = obj
+    if (!from) console.log('ops: miner not passed')
+    const actor = this.GetNode(from) || this.RandomClient()
+
     this.orderbook.push({
       type: 'bid',
-      amount: amount || getRandomInt(1, 10),
+      size: size || getRandomInt(1, 10),
       price: price || getRandomInt(0, 15)
     })
 
     return {
       name: 'AddBid',
       data: {
-        actors: [actor || this.RandomClient()]
+        actors: [actor]
       },
       actions: [{
         type: 'icon',
@@ -97,9 +148,14 @@ class Filecoin {
     }
   }
 
-  MakeDeal (from, to) {
-    from = from || this.RandomClient()
-    to = to || this.RandomMiner()
+  MakeDeal (obj = {}) {
+    let {from, to} = obj
+    if (!from) console.log('ops: miner not passed')
+    if (!to) console.log('ops: miner not passed')
+
+    from = this.GetNode(from) || this.RandomClient()
+    to = this.GetNode(to) || this.RandomMiner()
+
     return {
       name: 'MakeDeal',
       data: {
@@ -116,11 +172,17 @@ class Filecoin {
     }
   }
 
-  SendFile (from, to) {
+  SendFile (obj = {}) {
+    let {from, to} = obj
+    if (!from) console.log('ops: miner not passed')
+    if (!to) console.log('ops: miner not passed')
+
+    from = this.GetNode(from) || this.RandomClient()
+    to = this.GetNode(to) || this.RandomMiner()
     return {
       name: 'SendFile',
       data: {
-        links: [this.GenerateLink(from || this.RandomClient(), to || this.RandomMiner())]
+        links: [this.GenerateLink(from, to)]
       },
       actions: [{
         type: 'send',
@@ -130,8 +192,12 @@ class Filecoin {
     }
   }
 
-  NewBlockMined (from) {
-    from = from || this.RandomMiner()
+  NewBlockMined (obj = {}) {
+    let {from} = obj
+    if (!from) console.log('ops: miner not passed')
+
+    from = this.GetNode(from) || this.RandomMiner()
+
     return {
       name: 'NewBlockMined',
       data: {
@@ -144,18 +210,22 @@ class Filecoin {
     }
   }
 
-  SendPayment (from, to, amount) {
-    to = to || this.RandomClient()
-    from = from || this.RandomClient()
-    amount = amount || getRandomInt(1, from.balance)
+  SendPayment (obj = {}) {
+    let {from, to, value} = obj
+    if (!from) console.log('ops: miner not passed')
+    if (!to) console.log('ops: miner not passed')
+
+    to = this.GetNode(to) || this.RandomClient()
+    from = this.GetNode(from) || this.RandomClient()
+    value = value || getRandomInt(1, from.balance)
 
     if (from.balance == 0) {
       console.log('no balance!!!!!')
       return false
     }
 
-    from.balance -= amount
-    to.balance += amount
+    from.balance -= value
+    to.balance += value
 
     return {
       name: 'SendPayment',
@@ -449,7 +519,7 @@ function DrawBlockchainEvent (data) {
     .attr('class', 'block-number')
     .attr('x', 60)
     .attr('y', 50)
-    .text(d => 'Block ' + d.id)
+    .text(d => 'Block ' + d.id.slice(0, 10))
 
   block.append('text')
     .attr('class', 'block-miner')
@@ -481,8 +551,8 @@ DrawNodes(filecoin)
 
 setInterval(() => {
   const blockMiner = filecoin.RandomMiner()
-  DrawNetworkEvent(filecoin.NewBlockMined(blockMiner))
-  DrawNetworkEvent(filecoin.BroadcastBlock(blockMiner))
+  DrawNetworkEvent(filecoin.NewBlockMined({from: blockMiner.id }))
+  DrawNetworkEvent(filecoin.BroadcastBlock({from: blockMiner.id}))
   DrawBlockchainEvent(filecoin.chain)
   DrawNodes(filecoin)
 }, 3000)
@@ -523,7 +593,7 @@ function prefixSum (orders, type) {
 
   let arr = [{total: 0, price: sorted[0].price, type}]
   sorted.forEach(d => {
-    const total = d.price * d.amount
+    const total = d.price * d.size
     const last = arr[arr.length - 1]
     if (last.price === d.price) {
       last.total += total
@@ -618,3 +688,24 @@ const tooltip = d3.select('#viz-depth').append('div')
   .style('width', '200px')
   .style('opacity', 0)
   .html('')
+
+// function GetLiveFeed (cb) {
+//   fetch('/api')  // make a fetch request to a NDJSON stream service
+//     .then((response) => {
+//       return canNdjsonStream(response.body) // ndjsonStream parses the response.body
+//     }).then((stream) => {
+//       let read
+//       stream.getReader().read().then(read = (result) => {
+//         if (result.done) return
+//         cb(result)
+//         stream.getReader().read().then(read) // recurse through the stream
+//       })
+//     })
+// }
+
+// window.onload = function () {
+//   GetLiveFeed((res) => {
+//     const event = res.value
+//     filecoin[event.type](event)
+//   })
+// }
