@@ -1,0 +1,15 @@
+{
+  "name": "viz-circle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "mkdir -p app && browserify ./src/main.js > ./app/app.js"
+  },
+  "author": "Nicola Greco <me@nicola.io> (http://nicolagreco.com/)",
+  "license": "ISC",
+  "dependencies": {
+    "can-ndjson-stream": "^0.1.8"
+  }
+}
