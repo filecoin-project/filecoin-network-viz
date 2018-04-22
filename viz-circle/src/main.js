@@ -7,8 +7,8 @@ const GetRandomInt = require('./utils').GetRandomInt
 const chain = new ChainGraph()
 const market = new MarketGraph()
 const network = new NetworkGraph()
-// runFake(chain, market, network)
 
+// runFake(chain, market, network)
 runLive(chain, market, network)
 
 function runFake (chain, market, network) {
@@ -42,15 +42,17 @@ function runFake (chain, market, network) {
     }
   }, 500)
 
-  // setInterval(() => {
-  //   minersCount += GetRandomInt(0, 6) - 3
-  //   clientsCount += GetRandomInt(0, 6) - 3
-  //   miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
-  //   clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
-  //   filecoin = new Filecoin(miners, clients)
+  setInterval(() => {
+    minersCount += GetRandomInt(0, 6) - 3
+    clientsCount += GetRandomInt(0, 6) - 3
+    miners = d3.range(minersCount || 10).map(d => { return {id: 'miner' + d} })
+    clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
 
-  //   network.DrawNodes(filecoin)
-  // }, 6000)
+    // TODO: do this using minerJoins, MinerLeaves instead
+    filecoin = new Filecoin(miners, clients, filecoin.chain)
+
+    network.DrawNodes(filecoin)
+  }, 1500)
 }
 
 function runLive (chain, market, network) {
