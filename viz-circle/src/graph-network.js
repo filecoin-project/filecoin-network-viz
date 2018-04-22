@@ -20,7 +20,7 @@ module.exports = class NetworkGraph {
 
   DrawNodes (graph) {
     // Data
-    const nodes = graph.nodes.map((node, i) => {
+    const data = graph.nodes.map((node, i) => {
       var coord = circleCoord(this.circle, node, i, graph.nodes.length)
       node.x = coord.x
       node.y = coord.y
@@ -28,11 +28,11 @@ module.exports = class NetworkGraph {
     })
 
     // Nodes
-    var gnodesD = this.svg.selectAll('g.gnode')
-      .data(nodes, function (d) { return d.id })
+    var network = this.svg.selectAll('g.gnode')
+      .data(data, function (d) { return d.id })
 
     // on creation
-    var gnodes = gnodesD
+    var node = network
       .enter()
       .append('g')
       .attr('transform', d => {
@@ -42,24 +42,24 @@ module.exports = class NetworkGraph {
         return 'gnode' + ' type-' + d.type
       })
 
-    gnodes.append('image')
-    gnodes.append('text').attr('class', 'name')
-    gnodes.append('text').attr('class', 'balance')
+    node.append('image')
+    node.append('text').attr('class', 'name')
+    node.append('text').attr('class', 'balance')
       .attr('dy', -20)
       .attr('dx', 0)
-    gnodes.append('image').attr('class', 'balanceIcon')
+    node.append('image').attr('class', 'balanceIcon')
       .attr('href', 'img/filecoin.png')
       .attr('width', 15)
       .attr('y', -31)
       .attr('x', -20)
 
     // on removal
-    gnodesD
+    network
       .exit()
       .remove()
 
     // on upsert
-    let transition = gnodesD
+    let transition = network
       .transition()
       .attr('transform', d => {
         return 'translate(' + d.x + ',' + d.y + ')'
@@ -68,7 +68,7 @@ module.exports = class NetworkGraph {
         return 'gnode' + ' type-' + d.type
       })
 
-    gnodesD.select('image')
+    network.select('image')
         .attr('href', d => 'img/' + d.type + '.png')
         .attr('width', 30)
         .attr('x', -15)
@@ -77,12 +77,12 @@ module.exports = class NetworkGraph {
           return 'node'
         })
 
-    gnodesD.selectAll('text.name')
+    network.selectAll('text.name')
         .attr('dy', 25)
         .attr('dx', -15)
         .text(d => { return d.id.slice(0, 10) })
 
-    gnodesD.selectAll('text.balance')
+    network.selectAll('text.balance')
       .text(d => { return d.balance })
   }
 
