@@ -42,7 +42,21 @@ module.exports = class NetworkGraph {
         return 'gnode' + ' type-' + d.type
       })
 
-    node.append('image')
+    node.append('image').attr('class', 'node')
+      .attr('width', 30)
+      .attr('x', -15)
+      .attr('y', -15)
+      .transition()
+        .duration(300)
+        .attr('width', 60)
+        .attr('x', -30)
+        .attr('y', -30)
+      .transition()
+        .duration(300)
+        .attr('width', 30)
+        .attr('x', -15)
+        .attr('y', -15)
+
     node.append('text').attr('class', 'name')
     node.append('text').attr('class', 'balance')
       .attr('dy', -20)
@@ -70,12 +84,6 @@ module.exports = class NetworkGraph {
 
     network.select('image')
         .attr('href', d => 'img/' + d.type + '.png')
-        .attr('width', 30)
-        .attr('x', -15)
-        .attr('y', -15)
-        .attr('class', (d) => {
-          return 'node'
-        })
 
     network.selectAll('text.name')
         .attr('dy', 25)
