@@ -1,9 +1,9 @@
 const GetRandomInt = require('./utils').GetRandomInt
 
 module.exports = class Filecoin {
-  constructor (miners = [], clients = [], chain = []) {
+  constructor (miners = [], clients = [], chain = [], orderbook = []) {
     this.chain = chain
-    this.orderbook = []
+    this.orderbook = orderbook
     this.miners = miners.map((d, i) => {
       d.type = 'miner',
       d.balance = miners[i].balance || 10

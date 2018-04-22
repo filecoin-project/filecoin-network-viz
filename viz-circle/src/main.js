@@ -49,7 +49,7 @@ function runFake (chain, market, network) {
     clients = d3.range(clientsCount || 10).map(d => { return {id: 'client' + d} })
 
     // TODO: do this using minerJoins, MinerLeaves instead
-    filecoin = new Filecoin(miners, clients, filecoin.chain)
+    filecoin = new Filecoin(miners, clients, filecoin.chain, filecoin.orderbook)
 
     network.DrawNodes(filecoin)
   }, 1500)
