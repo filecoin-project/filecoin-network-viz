@@ -62,7 +62,9 @@ function runLive (chain, market, network) {
       const entry = res
       if (filecoin[entry.type]) {
         const event = filecoin[entry.type](entry)
-        network.DrawEvent(event)
+        if (event) {
+          network.DrawEvent(event)
+        }
         network.DrawNodes(filecoin)
         market.Draw(filecoin.orderbook)
         chain.Draw(filecoin.chain)

@@ -116,7 +116,9 @@ module.exports = class NetworkGraph {
       .attr('y', -10)
       .attr('href', d => 'img/' + action.name + '.png')
       .attr('transform', d => {
-        return 'translate(' + d.x + ',' + d.y + ')'
+        if (d) {
+          return 'translate(' + d.x + ',' + d.y + ')'
+        }
       })
       .transition()
         .duration(800)
