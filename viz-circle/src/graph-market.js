@@ -25,10 +25,10 @@ module.exports = class MarketGraph {
       .html('')
   }
 
-  Draw (data) {
-    const asks = prefixSum(data, 'ask')
-    const bids = prefixSum(data, 'bid')
-    data = asks.concat(bids)
+  Draw (dataOne) {
+    const asks = prefixSum(dataOne, 'ask')
+    const bids = prefixSum(dataOne, 'bid')
+    var data = asks.concat(bids)
 
     data = data.sort((a, b) => (a.price > b.price ? 1 : -1))
 

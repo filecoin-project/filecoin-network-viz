@@ -1,3 +1,5 @@
+const request = require('request')
+const ndjson = require('ndjson')
 const Filecoin = require('./filecoin')
 const ChainGraph = require('./graph-chain')
 const MarketGraph = require('./graph-market')
@@ -60,6 +62,7 @@ function runLive (chain, market, network) {
   window.onload = function () {
     GetLiveFeed((res) => {
       const entry = res
+      sanitizeInts(entry)
       if (filecoin[entry.type]) {
         const event = filecoin[entry.type](entry)
         if (event) {
@@ -81,4 +84,13 @@ function GetLiveFeed (cb) {
       console.log(obj)
       cb(obj)
     })
+}
+
+function sanitizeInts(order) {
+  var fix = ['price', 'total', 'size']
+  fix.map(f => {
+    if (order[f]) {
+      order[f] = parseInt(order[f], 10)
+    }
+  })
 }
