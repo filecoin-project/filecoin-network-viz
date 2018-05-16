@@ -201,6 +201,7 @@ class Filecoin {
     if (!from) console.log('ops: from not passed')
 
     from = this.GetNode(from) || this.RandomMiner()
+    from.balance += 5000
 
     return {
       name: 'NewBlockMined',
