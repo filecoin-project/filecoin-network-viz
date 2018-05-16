@@ -65,7 +65,7 @@ class Filecoin {
   ClientJoins (obj = {}) {
     const {from, balance, storage} = obj
 
-    this.client.push({
+    this.clients.push({
       type: 'client',
       id: from,
       balance: balance || 0
