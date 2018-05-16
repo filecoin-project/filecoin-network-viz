@@ -197,11 +197,14 @@ class Filecoin {
   }
 
   NewBlockMined (obj = {}) {
-    let {from} = obj
+    let {from, reward} = obj
     if (!from) console.log('ops: from not passed')
+    if (!reward) console.log('ops: reward not passed')
 
     from = this.GetNode(from) || this.RandomMiner()
-    from.balance += 5000
+    if (from) {
+      from.balance += reward || 1000 // 1000 should be the reward in go-filecoin for now.
+    }
 
     return {
       name: 'NewBlockMined',
@@ -226,7 +229,7 @@ class Filecoin {
 
     if (from.balance == 0) {
       console.log('no balance!!!!!')
-      return false
+      // return false // dont exit out bruv
     }
 
     from.balance -= value
@@ -518,7 +521,12 @@ function DrawNodes (graph) {
 }
 
 function DrawNetworkEvent (event) {
-  console.log(event)
+  if (!event || !event.actions) {
+    console.log("bad event or bad actions")
+    console.log(event)
+    return
+  }
+
   event.actions.forEach(action => {
     if (action.type === 'send' || action.type === 'line') {
       runLinesAction(event, action)
@@ -730,7 +738,7 @@ function GetLiveFeed (cb) {
 
 window.onload = function () {
   GetLiveFeed((res) => {
-    const entry = res
+    const entry = sanitizeEntry(res)
     if (filecoin[entry.type]) {
       const event = filecoin[entry.type](entry)
       DrawNetworkEvent(event)
@@ -738,4 +746,12 @@ window.onload = function () {
       DrawMarket(filecoin.orderbook)
     }
   })
+}
+
+function sanitizeEntry(e) {
+  var ints = ['price', 'size', 'data', 'reward']
+  ints.map((k) => {
+    if (e[k]) e[k] = parseInt(e[k], 10)
+  })
+  return e
 }
