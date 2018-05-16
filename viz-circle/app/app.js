@@ -74,7 +74,7 @@ class Filecoin {
     return {
       name: 'ClientJoins',
       data: {},
-      actions: {}
+      actions: []
     }
   }
 
