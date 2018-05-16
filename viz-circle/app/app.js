@@ -105,6 +105,8 @@ class Filecoin {
   AddAsk (obj = {}) {
     const {from, price, size} = obj
     if (!from) console.log('ops: from not passed')
+    if (!price) console.log('ops: price not passed')
+    if (!size) console.log('ops: size not passed')
     const actor = this.GetNode(from) || this.RandomMiner()
 
     this.orderbook.push({
@@ -128,6 +130,8 @@ class Filecoin {
   AddBid (obj = {}) {
     const {from, price, size} = obj
     if (!from) console.log('ops: from not passed')
+    if (!price) console.log('ops: price not passed')
+    if (!size) console.log('ops: size not passed')
     const actor = this.GetNode(from) || this.RandomClient()
 
     this.orderbook.push({
