@@ -10,8 +10,8 @@ const chain = new ChainGraph()
 const market = new MarketGraph()
 const network = new NetworkGraph()
 
-// runFake(chain, market, network)
-runLive(chain, market, network)
+runFake(chain, market, network)
+//runLive(chain, market, network)
 
 function runFake (chain, market, network) {
   let minersCount = 10

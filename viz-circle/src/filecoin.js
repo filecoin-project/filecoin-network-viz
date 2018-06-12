@@ -8,6 +8,7 @@ module.exports = class Filecoin {
       d.type = 'miner',
       d.balance = miners[i].balance || 10
       d.storage = miners[i].balance || 0
+      d.cmdAddr = miners[i].cmdAddr || ':9090'
       return d
     })
     this.clients = clients.map(d => {
@@ -38,13 +39,14 @@ module.exports = class Filecoin {
   }
 
   MinerJoins (obj = {}) {
-    const {from, balance, storage} = obj
+    const {from, balance, storage, cmdAddr} = obj
 
     this.miners.push({
       type: 'miner',
       id: from,
       balance: balance || 0,
-      storage: storage || 0
+      storage: storage || 0,
+      cmdAddr: cmdAddr || ':9090'
     })
 
     return {
@@ -57,7 +59,7 @@ module.exports = class Filecoin {
   ClientJoins (obj = {}) {
     const {from, balance, storage} = obj
 
-    this.client.push({
+    this.clients.push({
       type: 'client',
       id: from,
       balance: balance || 0

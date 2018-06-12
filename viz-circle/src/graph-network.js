@@ -1,12 +1,14 @@
 module.exports = class NetworkGraph {
   constructor (target = '#viz-network .viz') {
-    var width = 700
-    var height = 700
+    var width = d3.select(target).node().clientWidth * .75
+    var height = width
 
     this.svg = d3.select(target).append('svg')
         .attr('id', 'network')
         .attr('width', width)
         .attr('height', height)
+        .style('margin', '0 auto')
+        .style('display', 'block')
 
     // Draw two arcs, nodes will be around this
     var dim = width - 80
@@ -16,6 +18,16 @@ module.exports = class NetworkGraph {
 
     this.linesGroup = this.svg.append('g')
       .attr('id', 'paths')
+
+    this.tooltip = d3.select(target).append('div')
+      .attr('class', 'network-visualisation-tooltip')
+      .style('width', '300px')
+      .style('opacity', 0)
+      .style('position', 'absolute')
+      .style('top', '300px')
+      .style('left', '200px')
+      .style('background-color', 'white')
+      .html('')
   }
 
   DrawNodes (graph) {
@@ -66,6 +78,24 @@ module.exports = class NetworkGraph {
       .attr('width', 15)
       .attr('y', -31)
       .attr('x', -20)
+    node.on('click', (d) => {
+        this.tooltip.transition()
+          .duration(500)
+          .style('opacity', 1)
+
+        let html = '<table>'
+
+        const keys =  ['id', 'type', 'balance', 'storage']
+        keys.forEach((key) => {
+          html += `<tr><td><b>${key}</b></td><td>${d[key]}</td></tr>`
+        })
+
+        html += `<tr><td><b>explorer</b></td><td><a href="http://localhost:8080/#${d.cmdAddr}">explorer</a></td></tr>`
+
+        html += '</table>'
+
+        this.tooltip.html(html)
+      })
 
     // on removal
     network
