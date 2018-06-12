@@ -8,6 +8,7 @@ module.exports = class Filecoin {
       d.type = 'miner',
       d.balance = miners[i].balance || 10
       d.storage = miners[i].balance || 0
+      d.cmdAddr = miners[i].cmdAddr || ':9090'
       return d
     })
     this.clients = clients.map(d => {
@@ -26,25 +27,25 @@ module.exports = class Filecoin {
   }
 
   GetNode (address) {
-    return this.nodes.find(d => d.id === address)
+    const node = this.nodes.find(d => d.id === address)
+
+    return node
   }
 
   RandomEvent () {
-    let event
-    // while (event !== false) {
-    event = this.events[1 + Math.floor(Math.random() * (this.events.length - 1))]
-    // }
+    let event = this.events[1 + Math.floor(Math.random() * (this.events.length - 1))]
     return this[event]()
   }
 
   MinerJoins (obj = {}) {
-    const {from, balance, storage} = obj
+    const {from, balance, storage, cmdAddr} = obj
 
     this.miners.push({
       type: 'miner',
       id: from,
       balance: balance || 0,
-      storage: storage || 0
+      storage: storage || 0,
+      cmdAddr: cmdAddr || ':9090'
     })
 
     return {
@@ -57,7 +58,7 @@ module.exports = class Filecoin {
   ClientJoins (obj = {}) {
     const {from, balance, storage} = obj
 
-    this.client.push({
+    this.clients.push({
       type: 'client',
       id: from,
       balance: balance || 0
@@ -76,7 +77,7 @@ module.exports = class Filecoin {
     if (!block) console.log('ops: block not passed')
 
     const miner = this.GetNode(from) || this.RandomMiner()
-    const id = block || (Date.now() + '').split('').reverse().join('')
+    const id = block.stateRoot['/'] || (Date.now() + '').split('').reverse().join('')
 
     miner.balance += 10
     this.chain.push({id, miner})
