@@ -77,7 +77,7 @@ module.exports = class Filecoin {
     if (!block) console.log('ops: block not passed')
 
     const miner = this.GetNode(from) || this.RandomMiner()
-    const id = block.stateRoot['/'] || (Date.now() + '').split('').reverse().join('')
+    const id = block || (Date.now() + '').split('').reverse().join('')
 
     miner.balance += 10
     this.chain.push({id, miner})
