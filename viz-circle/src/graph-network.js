@@ -73,10 +73,12 @@ module.exports = class NetworkGraph {
       .attr('width', 15)
       .attr('y', -31)
       .attr('x', -20)
-    node.on('click', (d) => {
+    node.on('mouseover', (d) => {
         this.tooltip.transition()
           .duration(500)
           .style('opacity', 1)
+          .style("left", (d3.event.pageX) + 'px')
+          .style("top", (d3.event.pageY) + 'px')
 
         let html = '<table>'
 
@@ -85,12 +87,15 @@ module.exports = class NetworkGraph {
           html += `<tr><td><b>${key}</b></td><td>${d[key]}</td></tr>`
         })
 
-        html += `<tr><td><b>explorer</b></td><td><a href="/explorer/#${d.cmdAddr}" target="_blank">explorer</a></td></tr>`
+        html += `<tr><td><b>explorer</b></td><td><a href="http://127.0.0.1:7003/#${d.cmdAddr}" target="_blank">explorer</a></td></tr>`
 
         html += '</table>'
 
         this.tooltip.html(html)
       })
+      .on('mouseout', () =>
+        this.tooltip.transition().duration(500).style('opacity', 0)
+      )
 
     // on removal
     network
@@ -227,7 +232,7 @@ module.exports = class NetworkGraph {
       event.data.links.forEach(d => {
         this.runLineAction(event, action, {links: [d]})
       })
-    } else {
+    } else if (event.data.links.length == 1) {
       this.runLineAction(event, action, event.data)
     }
   }

@@ -29,6 +29,10 @@ module.exports = class Filecoin {
   GetNode (address) {
     const node = this.nodes.find(d => d.id === address)
 
+    if (!node) {
+      console.error('No node found for address', address)
+    }
+
     return node
   }
 
@@ -79,7 +83,6 @@ module.exports = class Filecoin {
     const miner = this.GetNode(from) || this.RandomMiner()
     const id = block || (Date.now() + '').split('').reverse().join('')
 
-    miner.balance += 10
     this.chain.push({id, miner})
 
     return {
@@ -186,10 +189,13 @@ module.exports = class Filecoin {
   }
 
   NewBlockMined (obj = {}) {
-    let {from} = obj
+    let {from, reward} = obj
     if (!from) console.log('ops: from not passed')
+    if (!reward) console.log('ops: reward not passed')
 
     from = this.GetNode(from) || this.RandomMiner()
+
+    from.balance += reward
 
     return {
       name: 'NewBlockMined',
@@ -212,7 +218,15 @@ module.exports = class Filecoin {
     from = this.GetNode(from) || this.RandomClient()
     value = value || GetRandomInt(1, from.balance)
 
-    if (from.balance == 0) {
+    if (!to) {
+      return console.error('SendPayment: No `to` could be found')
+    }
+
+    if (!from) {
+      return console.error('SendPayment: No `from` could be found')
+    }
+
+    if (from.balance - value <= 0) {
       console.log('no balance!!!!!')
       return false
     }

@@ -33,7 +33,6 @@ module.exports = class MarketGraph {
     // Define the div for the tooltip
     this.tooltip = d3.select('#viz-depth').append('div')
       .attr('class', 'orderbook-visualisation-tooltip')
-      .style('width', '200px')
       .style('opacity', 0)
       .html('')
   }
@@ -91,10 +90,12 @@ module.exports = class MarketGraph {
           }
         })
         .attr('height', d => this.marketHeight - this.y(d.total))
-        .on('mouseover', (d) => {
+        .on('mouseover', (d, e, g, f) => {
           this.tooltip.transition()
             .duration(500)
             .style('opacity', 1)
+            .style("left", (d3.event.pageX) + 'px')
+            .style("top", (d3.event.pageY) + 'px')
 
           let html = '<table>'
 

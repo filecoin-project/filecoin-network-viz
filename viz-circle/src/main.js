@@ -87,7 +87,7 @@ function GetLiveFeed (cb) {
 }
 
 function sanitizeInts(order) {
-  var fix = ['price', 'total', 'size']
+  var fix = ['price', 'total', 'size', 'reward', 'value']
   fix.map(f => {
     if (order[f]) {
       order[f] = parseInt(order[f], 10)
