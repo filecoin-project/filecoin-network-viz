@@ -87,11 +87,13 @@ module.exports = class NetworkGraph {
           html += `<tr><td><b>${key}</b></td><td>${d[key]}</td></tr>`
         })
 
-        html += `<tr><td><b>explorer</b></td><td><a href="http://127.0.0.1:7003/#${d.cmdAddr}" target="_blank">explorer</a></td></tr>`
-
         html += '</table>'
+        html += '<p>Click on the node to open chain explorer</p>'
 
         this.tooltip.html(html)
+      })
+      .on('click', (d) => {
+        window.open(`http://127.0.0.1:7003/#${d.cmdAddr}`, '_blank')
       })
       .on('mouseout', () =>
         this.tooltip.transition().duration(500).style('opacity', 0)
