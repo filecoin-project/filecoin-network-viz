@@ -58,17 +58,14 @@ text {
 }
 
 #viz-network {
-  float: left;
 }
 
 #viz-network .viz {
 }
 
 #viz-chain {
-  float: left;
 }
 #viz-depth {
-  float: left;
 }
 
 #viz-depth > svg {
