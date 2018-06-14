@@ -3,7 +3,7 @@ module.exports = class ChainGraph {
     this.svg = d3.select(target).append('svg')
     .attr('id', 'blockchain')
     .attr('width', 200)
-    .attr('height', 700)
+    .attr('height', 800)
   }
 
   Draw (data) {

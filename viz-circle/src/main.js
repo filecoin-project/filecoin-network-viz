@@ -3,15 +3,19 @@ const ndjson = require('ndjson')
 const Filecoin = require('./filecoin')
 const ChainGraph = require('./graph-chain')
 const MarketGraph = require('./graph-market')
+const OrderbookGraph = require('./graph-orderbook')
+const DealsGraph = require('./graph-deals')
 const NetworkGraph = require('./graph-network')
 const GetRandomInt = require('./utils').GetRandomInt
 
 const chain = new ChainGraph()
 const market = new MarketGraph()
 const network = new NetworkGraph()
+const orderbook = new OrderbookGraph()
+const deals = new DealsGraph()
 
 //runFake(chain, market, network)
-runLive(chain, market, network)
+runLive(chain, market, network, orderbook, deals)
 
 function runFake (chain, market, network) {
   let minersCount = 10
@@ -57,13 +61,14 @@ function runFake (chain, market, network) {
   }, 1500)
 }
 
-function runLive (chain, market, network) {
+function runLive (chain, market, network, orderbook, deals) {
   let filecoin = new Filecoin()
   window.onload = function () {
     GetLiveFeed((res) => {
       const entry = res
       sanitizeInts(entry)
       if (filecoin[entry.type]) {
+        console.log(`[${entry.type}]`, entry)
         const event = filecoin[entry.type](entry)
         if (event) {
           network.DrawEvent(event)
@@ -71,6 +76,8 @@ function runLive (chain, market, network) {
         network.DrawNodes(filecoin)
         market.Draw(filecoin.orderbook)
         chain.Draw(filecoin.chain)
+        orderbook.Draw(filecoin.orderbook)
+        deals.Draw(filecoin.deals)
       }
     })
   }
@@ -80,8 +87,6 @@ function GetLiveFeed (cb) {
   request.get('http://127.0.0.1:7002/logs')
     .pipe(ndjson.parse())
     .on('data', function (obj) {
-      console.log('ndjson got')
-      console.log(obj)
       cb(obj)
     })
 }

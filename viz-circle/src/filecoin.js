@@ -3,6 +3,7 @@ const GetRandomInt = require('./utils').GetRandomInt
 module.exports = class Filecoin {
   constructor (miners = [], clients = [], chain = [], orderbook = []) {
     this.chain = chain
+    this.deals = []
     this.orderbook = orderbook
     this.miners = miners.map((d, i) => {
       d.type = 'miner',
@@ -77,8 +78,8 @@ module.exports = class Filecoin {
 
   BroadcastBlock (obj = {}) {
     const {from, block} = obj
-    if (!from) console.log('ops: from not passed')
-    if (!block) console.log('ops: block not passed')
+    if (!from) console.error('ops: from not passed')
+    if (!block) console.error('ops: block not passed')
 
     const miner = this.GetNode(from) || this.RandomMiner()
     const id = block || (Date.now() + '').split('').reverse().join('')
@@ -99,14 +100,19 @@ module.exports = class Filecoin {
   }
 
   AddAsk (obj = {}) {
-    const {from, price, size} = obj
-    if (!from) console.log('ops: from not passed')
+    const {from, price, size, value, txid} = obj
+    if (!from) console.error('ops: from not passed')
+    if (!price) console.error('ops: price not passed')
+    if (!size) console.error('ops: size not passed')
+    if (!txid) console.error('ops: txid not passed')
     const actor = this.GetNode(from) || this.RandomMiner()
 
     this.orderbook.push({
       type: 'ask',
+      from: from,
+      id: txid || (Date.now() + '').split('').reverse().join(''),
       size: size || GetRandomInt(1, 10),
-      price: price || GetRandomInt(12, 30)
+      price: price || GetRandomInt(12, 30),
     })
 
     return {
@@ -122,14 +128,19 @@ module.exports = class Filecoin {
   }
 
   AddBid (obj = {}) {
-    const {from, price, size} = obj
-    if (!from) console.log('ops: from not passed')
+    const {from, price, size, value, txid} = obj
+    if (!from) console.error('ops: from not passed')
+    if (!price) console.error('ops: price not passed')
+    if (!size) console.error('ops: size not passed')
+    if (!txid) console.error('ops: txid not passed')
     const actor = this.GetNode(from) || this.RandomClient()
 
     this.orderbook.push({
       type: 'bid',
+      id: txid || (Date.now() + '').split('').reverse().join(''),
+      from: from,
       size: size || GetRandomInt(1, 10),
-      price: price || GetRandomInt(0, 15)
+      price: price || GetRandomInt(0, 15),
     })
 
     return {
@@ -145,12 +156,34 @@ module.exports = class Filecoin {
   }
 
   MakeDeal (obj = {}) {
-    let {from, to} = obj
-    if (!from) console.log('ops: from not passed')
-    if (!to) console.log('ops: to not passed')
+    let {from, to, price, size} = obj
+    if (!from) console.error('ops: from not passed')
+    if (!to) console.error('ops: to not passed')
 
     from = this.GetNode(from) || this.RandomClient()
     to = this.GetNode(to) || this.RandomMiner()
+
+    this.deals.push({
+      id: `${from.id}-${to.di}-${price}-${size}-${obj.ask.id}-${obj.bid.id}`,
+      from,
+      to,
+      price,
+      size,
+      askID: obj.ask.id,
+      bidID: obj.bid.id
+    })
+
+    /*
+    const matches = this.orderbook.filter(o => {
+      if (o.type === 'bid' && o.from === obj.bid.owner && o.price === price && o.size === size {
+        return true
+      }
+
+      if (o.type === 'ask' && o.from === obj.ask.owner) {
+        return true
+      }
+    })
+    */
 
     return {
       name: 'MakeDeal',
@@ -170,8 +203,8 @@ module.exports = class Filecoin {
 
   SendFile (obj = {}) {
     let {from, to} = obj
-    if (!from) console.log('ops: from not passed')
-    if (!to) console.log('ops: to not passed')
+    if (!from) console.error('ops: from not passed')
+    if (!to) console.error('ops: to not passed')
 
     from = this.GetNode(from) || this.RandomClient()
     to = this.GetNode(to) || this.RandomMiner()
@@ -190,8 +223,8 @@ module.exports = class Filecoin {
 
   NewBlockMined (obj = {}) {
     let {from, reward} = obj
-    if (!from) console.log('ops: from not passed')
-    if (!reward) console.log('ops: reward not passed')
+    if (!from) console.error('ops: from not passed')
+    if (!reward) console.error('ops: reward not passed')
 
     from = this.GetNode(from) || this.RandomMiner()
 
@@ -211,8 +244,8 @@ module.exports = class Filecoin {
 
   SendPayment (obj = {}) {
     let {from, to, value} = obj
-    if (!from) console.log('ops: from not passed')
-    if (!to) console.log('ops: to not passed')
+    if (!from) console.error('ops: from not passed')
+    if (!to) console.error('ops: to not passed')
 
     to = this.GetNode(to) || this.RandomClient()
     from = this.GetNode(from) || this.RandomClient()
@@ -227,7 +260,7 @@ module.exports = class Filecoin {
     }
 
     if (from.balance - value <= 0) {
-      console.log('no balance!!!!!')
+      console.error('no balance!!!!!')
       return false
     }
 
