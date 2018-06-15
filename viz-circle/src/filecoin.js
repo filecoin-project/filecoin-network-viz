@@ -5,6 +5,7 @@ module.exports = class Filecoin {
     this.chain = chain
     this.deals = []
     this.nodeMap = []
+    this.heartbeats = {}
     this.askID = 0
     this.bidID = 0
     this.orderbook = orderbook
@@ -28,6 +29,11 @@ module.exports = class Filecoin {
       'SendFile',
       'SendPayment'
     ]
+  }
+
+  HeartBeat(node) {
+    this.heartbeats[node.from] = node
+    console.log(this.nodes)
   }
 
   CreateMiner(obj = {}) {

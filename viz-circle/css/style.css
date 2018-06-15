@@ -1,7 +1,7 @@
 body {
 }
 
-.main {
+.main, .table-data {
   max-width: 1920px;
   margin: 0 auto;
 }
@@ -71,6 +71,33 @@ text {
 #viz-chain {
 }
 #viz-depth {
+}
+
+#viz-heartbeat .viz {
+}
+
+.viz-table {
+    border: solid 1px #8c8c8c;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-family: monospace;
+    width: 100%;
+}
+
+.viz-table thead th {
+    background-color: #EDEDED;
+    border: solid 1px #c6c6c6;
+    color: #8c8c8c;
+    padding: 10px;
+    text-align: left;
+    text-shadow: 1px 1px 1px #fff;
+}
+
+.viz-table tbody td {
+    border: solid 1px #c6c6c6;
+    color: #333;
+    padding: 10px;
+    text-shadow: 1px 1px 1px #fff;
 }
 
 #viz-depth > svg {
