@@ -4,6 +4,7 @@ module.exports = class Filecoin {
   constructor (miners = [], clients = [], chain = [], orderbook = []) {
     this.chain = chain
     this.deals = []
+    this.nodeMap = []
     this.orderbook = orderbook
     this.miners = miners.map((d, i) => {
       d.type = 'miner',
@@ -27,11 +28,20 @@ module.exports = class Filecoin {
     ]
   }
 
+  CreateMiner(obj = {}) {
+    this.nodeMap[obj['miner-addr']] = obj.from
+  }
+
   GetNode (address) {
     const node = this.nodes.find(d => d.id === address)
 
     if (!node) {
-      console.error('No node found for address', address)
+      if (this.nodeMap[address]) {
+          address = this.nodeMap[address]
+          return this.nodes.find(d => d.id === address)
+      } else {
+        console.error('No node found for address', address)
+      }
     }
 
     return node
