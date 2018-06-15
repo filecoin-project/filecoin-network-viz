@@ -1,6 +1,11 @@
 body {
 }
 
+.main {
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
 h1 {
   font-family: 'Source Sans Pro', sans-serif;
   padding-top: 0;

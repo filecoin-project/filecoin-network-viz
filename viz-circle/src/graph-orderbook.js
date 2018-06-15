@@ -7,10 +7,13 @@ module.exports = class OrderbookGraph {
   }
 
   Draw(data) {
+
     data = data.filter(Boolean).slice(-20)
 
+    console.log(data)
+
     const blockchain = this.svg.selectAll('g.orders')
-      .data(data, d => d.id)
+      .data(data, d => `${d.type}${d.id}`)
 
     // on blocks being added
     let block = blockchain.enter()

@@ -5,6 +5,8 @@ module.exports = class Filecoin {
     this.chain = chain
     this.deals = []
     this.nodeMap = []
+    this.askID = 0
+    this.bidID = 0
     this.orderbook = orderbook
     this.miners = miners.map((d, i) => {
       d.type = 'miner',
@@ -110,19 +112,21 @@ module.exports = class Filecoin {
   }
 
   AddAsk (obj = {}) {
-    const {from, price, size, value, txid} = obj
-    if (!from) console.error('ops: from not passed')
-    if (!price) console.error('ops: price not passed')
-    if (!size) console.error('ops: size not passed')
-    if (!txid) console.error('ops: txid not passed')
-    const actor = this.GetNode(from) || this.RandomMiner()
+    const ask = obj.ask
+    const actor = this.GetNode(ask.owner) || this.RandomMiner()
+
+    if (this.askID >= ask.id) {
+      return
+    }
+
+    this.askID = ask.id
 
     this.orderbook.push({
       type: 'ask',
-      from: from,
-      id: txid || (Date.now() + '').split('').reverse().join(''),
-      size: size || GetRandomInt(1, 10),
-      price: price || GetRandomInt(12, 30),
+      from: ask.owner,
+      id: ask.id || (Date.now() + '').split('').reverse().join(''),
+      size: +ask.size || GetRandomInt(1, 10),
+      price: +ask.price || GetRandomInt(12, 30),
     })
 
     return {
@@ -138,19 +142,21 @@ module.exports = class Filecoin {
   }
 
   AddBid (obj = {}) {
-    const {from, price, size, value, txid} = obj
-    if (!from) console.error('ops: from not passed')
-    if (!price) console.error('ops: price not passed')
-    if (!size) console.error('ops: size not passed')
-    if (!txid) console.error('ops: txid not passed')
-    const actor = this.GetNode(from) || this.RandomClient()
+    const bid = obj.bid
+    const actor = this.GetNode(bid.owner) || this.RandomClient()
+
+    if (this.bidID >= bid.id) {
+      return
+    }
+
+    this.bidID = bid.id
 
     this.orderbook.push({
       type: 'bid',
-      id: txid || (Date.now() + '').split('').reverse().join(''),
-      from: from,
-      size: size || GetRandomInt(1, 10),
-      price: price || GetRandomInt(0, 15),
+      id: bid.id || (Date.now() + '').split('').reverse().join(''),
+      from: bid.owner,
+      size: +bid.size || GetRandomInt(1, 10),
+      price: +bid.price || GetRandomInt(0, 15),
     })
 
     return {
@@ -172,6 +178,9 @@ module.exports = class Filecoin {
 
     from = this.GetNode(from) || this.RandomClient()
     to = this.GetNode(to) || this.RandomMiner()
+
+    this.orderbook = this.orderbook.filter(o => !(o.type === 'bid' && o.id === obj.bid.id))
+    this.orderbook = this.orderbook.filter(o => !(o.type === 'ask' && o.id === obj.ask.id))
 
     this.deals.push({
       id: `${from.id}-${to.di}-${price}-${size}-${obj.ask.id}-${obj.bid.id}`,
