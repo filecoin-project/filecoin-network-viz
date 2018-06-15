@@ -8,9 +8,7 @@ module.exports = class OrderbookGraph {
 
   Draw(data) {
 
-    data = data.filter(Boolean).slice(-20)
-
-    console.log(data)
+    data = data.filter(Boolean).slice(-15)
 
     const blockchain = this.svg.selectAll('g.orders')
       .data(data, d => `${d.type}${d.id}`)

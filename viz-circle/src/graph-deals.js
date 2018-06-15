@@ -4,10 +4,13 @@ module.exports = class DealsGraph {
     .attr('id', 'blockchain')
     .attr('width', 200)
     .attr('height', 800)
+    .attr('transform', (d, i) => {
+      return 'translate(0,-15)'
+    })
   }
 
   Draw(data) {
-    data = data.filter(Boolean).slice(-20)
+    data = data.filter(Boolean).slice(-15)
 
     const blockchain = this.svg.selectAll('g.deals')
       .data(data, d => d.id)

@@ -7,7 +7,7 @@ module.exports = class ChainGraph {
   }
 
   Draw (data) {
-    data = data.slice(-10)
+    data = data.slice(-15)
 
     const blockchain = this.svg.selectAll('g.block')
       .data(data, d => d.id)
@@ -18,19 +18,19 @@ module.exports = class ChainGraph {
       .attr('class', d => 'block b-' + d.id)
 
     block.append('image')
-      .attr('href', 'img/block.png')
+      .attr('href', 'img/block-crop.png')
       .attr('width', 50)
 
     block.append('text')
       .attr('class', 'block-number')
       .attr('x', 60)
-      .attr('y', 50)
+      .attr('y', 30)
       .text(d => 'Block ' + d.id.slice(0, 10))
 
     block.append('text')
       .attr('class', 'block-miner')
       .attr('x', 60)
-      .attr('y', 65)
+      .attr('y', 45)
       .text(d => 'miner: ' + d.miner.id.slice(0, 10))
 
     // on blocks being removed
