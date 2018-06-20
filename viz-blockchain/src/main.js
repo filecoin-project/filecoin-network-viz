@@ -34,34 +34,32 @@ function runFake () {
   }, 2000)
 }
 
-// function runLive (chain, market, network) {
-//   let filecoin = new Filecoin()
-//   window.onload = function () {
-//     GetLiveFeed((res) => {
-//       const entry = res
-//       sanitizeInts(entry)
-//       if (filecoin[entry.type]) {
-//         const event = filecoin[entry.type](entry)
-//         if (event) {
-//           network.DrawEvent(event)
-//         }
-//         network.DrawNodes(filecoin)
-//         market.Draw(filecoin.orderbook)
-//         chain.Draw(filecoin.chain)
-//       }
-//     })
-//   }
-// }
+function runLive (chain, market, network) {
+  let filecoin = new Filecoin()
+  window.onload = function () {
+    GetLiveFeed((res) => {
+      const entry = res
+      // sanitizeInts(entry)
+      if (filecoin[entry.type]) {
+        const event = filecoin[entry.type](entry)
+        // if (event) {
+        //   chain.Draw(sim.filecoin, event)
+        // }
+        chain.Draw(filecoin)
+      }
+    })
+  }
+}
 
-// function GetLiveFeed (cb) {
-//   request.get('http://127.0.0.1:7002/logs')
-//     .pipe(ndjson.parse())
-//     .on('data', function (obj) {
-//       console.log('ndjson got')
-//       console.log(obj)
-//       cb(obj)
-//     })
-// }
+function GetLiveFeed (cb) {
+  request.get('http://127.0.0.1:7002/logs')
+    .pipe(ndjson.parse())
+    .on('data', function (obj) {
+      console.log('ndjson got')
+      console.log(obj)
+      cb(obj)
+    })
+}
 
 // function sanitizeInts (order) {
 //   var fix = ['price', 'total', 'size']
