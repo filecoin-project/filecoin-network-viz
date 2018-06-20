@@ -14,7 +14,7 @@ module.exports = class Filecoin {
     this.minersHeads = {} // miner-id => block-cid
 
     this.events = [
-      'ReceivedBlock',
+      'SawBlock',
       'PickedChain'
     ]
   }
@@ -47,14 +47,13 @@ module.exports = class Filecoin {
     return this.blocks[blockCid]
   }
 
-  ReceivedBlock (obj = {}, rec = false) {
-    // console.log('received', obj.block, rec)
+  SawBlock (obj = {}, rec = false) {
     let {to, from, block} = obj
 
     const b = new Block(block)
 
     b.parents.forEach(p => {
-      this.ReceivedBlock({
+      this.SawBlock({
         from: from,
         to: to,
         block: {cid: p, height: b.height - 1}
@@ -62,7 +61,6 @@ module.exports = class Filecoin {
     })
 
     // create block if does not exist
-    console.log('adding', obj.block, b)
     if (!this.blocks[b.cid]) {
       this.blocks[b.cid] = b
 
@@ -76,7 +74,6 @@ module.exports = class Filecoin {
         }
         // add block to height
         this.heights[b.height].push(b)
-        console.log('adding', b.cid, 'in height', b.height)
       }
     } else {
       // console.log('already found!', b)
@@ -100,7 +97,7 @@ module.exports = class Filecoin {
     }
 
     return {
-      name: 'ReceivedBlock',
+      name: 'SawBlock',
       data: {},
       actions: [{
         type: 'highlight',
@@ -113,7 +110,7 @@ module.exports = class Filecoin {
   PickedChain (obj = {}) {
     const {node, block} = obj
 
-    this.ReceivedBlock({to: node, block})
+    this.SawBlock({to: node, block})
     this.minersHeads[node] = block.cid
 
     return {

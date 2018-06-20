@@ -7,8 +7,8 @@ const GetRandomInt = require('./utils').GetRandomInt
 
 const chain = new ChainGraph()
 
-runFake(chain)
-// runLive(chain)
+// runFake(chain)
+runLive(chain)
 
 function runFake () {
   const minersCount = 10
@@ -16,10 +16,12 @@ function runFake () {
   sim.runEpoch(4)
   chain.Draw(sim.filecoin)
 
+  sim.runEpoch(3)
+  chain.Draw(sim.filecoin)
+
   setTimeout(() => {
     sim.runEpoch(4)
     chain.Draw(sim.filecoin)
-    console.log(sim.filecoin)
   }, 1000)
 
   setTimeout(() => {
@@ -56,8 +58,7 @@ function GetLiveFeed (cb) {
   request.get('http://127.0.0.1:7002/logs')
     .pipe(ndjson.parse())
     .on('data', function (obj) {
-      console.log('ndjson got')
-      console.log(obj)
+      console.log(obj.type)
       cb(obj)
     })
 }

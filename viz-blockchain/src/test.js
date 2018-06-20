@@ -18,10 +18,10 @@ test.only('received block', function (t) {
 
   // adding parent and then current
   const f1 = new Filecoin()
-  f1.ReceivedBlock({from: 'm1', block: {cid: 'b1'}})
-  f1.ReceivedBlock({from: 'm1', block: {cid: 'b2a', parents: ['b1']}})
-  f1.ReceivedBlock({from: 'm1', block: {cid: 'b2b', parents: ['b1']}})
-  f1.ReceivedBlock({from: 'm1', block: {cid: 'b3', parents: ['b2a', 'b2b']}})
+  f1.SawBlock({from: 'm1', block: {cid: 'b1'}})
+  f1.SawBlock({from: 'm1', block: {cid: 'b2a', parents: ['b1']}})
+  f1.SawBlock({from: 'm1', block: {cid: 'b2b', parents: ['b1']}})
+  f1.SawBlock({from: 'm1', block: {cid: 'b3', parents: ['b2a', 'b2b']}})
   t.deepEqual(Object.keys(f1.blocks), ['b1', 'b2a', 'b2b', 'b3'], 'total of two blocks')
   t.equal(f1.blocks['b1'].parents.length, 0, 'initial node added with no parents')
   t.equal(f1.blocks['b2a'].parents.length, 1, 'second node added with one parent')
@@ -30,12 +30,12 @@ test.only('received block', function (t) {
 
   // directly add current block with unknown parent
   const f2 = new Filecoin()
-  f2.ReceivedBlock({from: 'm1', block: {cid: 'b4', parents: ['b3']}})
+  f2.SawBlock({from: 'm1', block: {cid: 'b4', parents: ['b3']}})
   t.deepEqual(Object.keys(f2.blocks), ['b3', 'b4'], 'total of two blocks')
   t.equal(f2.blocks['b4'].parents.length, 1, 'parent is correctly added')
   t.equal(f2.blocks['b3'].parents.length, 0, 'node added as a parent does not have parents on record')
 
-  f2.ReceivedBlock({from: 'm1', block: {cid: 'b3', parents: ['b2']}})
+  f2.SawBlock({from: 'm1', block: {cid: 'b3', parents: ['b2']}})
   t.equal(f2.blocks['b3'].parents.length, 1, 'node added as a parent has a parent on update')
 })
 

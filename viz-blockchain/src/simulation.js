@@ -25,12 +25,9 @@ module.exports = class Simulation {
       let parents = []
       if (this.height > 0) {
         parents = this.filecoin.heights[this.height - 1] || []
-        console.log('all the heights', this.filecoin.heights, this.height)
       }
       obj.block.parents = parents.map(d => d.cid)
-      console.log('adding node', obj.block.cid, obj.block.height, obj.block.parents)
-      this.filecoin.ReceivedBlock(obj)
-      console.log('node added', this.filecoin)
+      this.filecoin.SawBlock(obj)
     }
   }
 }
