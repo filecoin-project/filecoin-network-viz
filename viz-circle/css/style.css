@@ -1,16 +1,33 @@
 body {
 }
-#vizs {
-  border-top: 20px solid #158cd2;
-  padding-left: 60px;
-}
-.viz {
-  margin-top: -45px;
-  margin-right: 30px;
+
+.main, .table-data {
+  max-width: 1920px;
+  margin: 0 auto;
 }
 
 h1 {
   font-family: 'Source Sans Pro', sans-serif;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.orderbook-visualisation-tooltip {
+  position: absolute;
+  background-color: rgba(0,0,0,.7);
+  color: white;
+  padding: 5px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.network-visualisation-tooltip {
+  position: absolute;
+  background-color: rgba(0,0,0,.7);
+  color: white;
+  padding: 5px;
+  font-size: 12px;
+  border-radius: 3px;
 }
 
 line.node-link, path.node-link {
@@ -46,13 +63,57 @@ text {
 }
 
 #viz-network {
-  float: left;
 }
+
+#viz-network .viz {
+}
+
 #viz-chain {
-  float: left;
 }
 #viz-depth {
-  float: left;
+}
+
+#viz-heartbeat .viz {
+}
+
+.viz-table {
+    border: solid 1px #8c8c8c;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-family: monospace;
+    width: 100%;
+}
+
+.viz-table thead th {
+    background-color: #EDEDED;
+    border: solid 1px #c6c6c6;
+    color: #8c8c8c;
+    padding: 10px;
+    text-align: left;
+    text-shadow: 1px 1px 1px #fff;
+}
+
+.viz-table tbody td {
+    border: solid 1px #c6c6c6;
+    color: #333;
+    padding: 10px;
+    text-shadow: 1px 1px 1px #fff;
+}
+
+#viz-depth > svg {
+  width: 100%;
+  height: 200px;
+}
+
+#viz-depth .axis path, #viz-depth .axis line {
+  fill: none;
+  stroke: grey;
+  stroke-width: 1;
+  shape-render: crispEdges;
+}
+
+#viz-depth .axis text {
+  font-size: 12px;
 }
 
 .node-action {
@@ -76,17 +137,51 @@ text {
   fill: #337ab7;
 }
 
-.axis--x path {
-  display: none;
+.orders > img {
+  margin-top: -5px;
 }
 
-.axis--y path {
-  display: none;
-}
 #viz-depth .viz {
   margin-top: 0;
 }
+
 .block-miner {
   fill: #999;
   font-size: 0.7em;
+}
+
+
+.main {
+  display: grid;
+  min-height: 100%;
+  grid-template-columns: 250px 250px 1fr 250px;
+  grid-template-areas: "chain orderbook network deals"
+}
+
+.main section {
+}
+
+.chain {
+  grid-area: chain;
+}
+
+.orderbook {
+  grid-area: orderbook;
+}
+
+.network {
+  grid-area: network;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.deals {
+  grid-area: deals;
+}
+
+.network-graph {
+}
+
+.depth-chart {
 }
