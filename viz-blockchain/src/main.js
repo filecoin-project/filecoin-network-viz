@@ -33,8 +33,8 @@ function runFake () {
       node: miner,
       block: block
     }
-    sim.filecoin.PickedChain(obj)
-    chain.Draw(sim.filecoin)
+    const event = sim.filecoin.PickedChain(obj)
+    chain.Draw(sim.filecoin, event)
   }, 2000)
 }
 

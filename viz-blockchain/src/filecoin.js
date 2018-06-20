@@ -78,7 +78,11 @@ module.exports = class Filecoin {
     return {
       name: 'ReceivedBlock',
       data: {},
-      actions: []
+      actions: [{
+        type: 'highlight',
+        cid: b.cid,
+        counter: 'counterSeen'
+      }]
     }
   }
 
@@ -91,15 +95,11 @@ module.exports = class Filecoin {
     return {
       name: 'PickedChain',
       data: {},
-      actions: []
+      actions: [{
+        type: 'highlight',
+        cid: block.cid,
+        counter: 'counterPicked'
+      }]
     }
-  }
-
-  RandomEvent () {
-    let event
-    // while (event !== false) {
-    event = this.events[1 + Math.floor(Math.random() * (this.events.length - 1))]
-    // }
-    return this[event]()
   }
 }

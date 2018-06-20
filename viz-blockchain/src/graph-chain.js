@@ -105,9 +105,32 @@ module.exports = class ChainGraph {
         .attr('y2', d => d[1].y + 16)
   }
 
-  Draw (filecoin) {
+  DrawHighlight (event, action) {
+    const block = this.blocks.select('.b-' + action.cid + ' .' + action.counter)
+    console.log(block)
+
+    block
+      .transition()
+        .duration(100)
+        .style('background', '#fdc433')
+      .transition()
+        .delay(300)
+        .duration(100)
+        .style('background', action.counter == 'counterPicked' ? '#1E90FB' : '#555555')
+  }
+
+  Draw (filecoin, event) {
     const dag = dagLayout(filecoin, blockSizes)
     this.DrawBlocks(filecoin, dag)
     this.DrawArrows(filecoin, dag)
+
+    if (event) {
+      console.log('event found', event)
+      event.actions.forEach(action => {
+        if (action.type === 'highlight') {
+          this.DrawHighlight(event, action)
+        }
+      })
+    }
   }
 }
