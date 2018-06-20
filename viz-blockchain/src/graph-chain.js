@@ -83,7 +83,6 @@ module.exports = class ChainGraph {
 
   DrawArrows (filecoin, dag) {
     const data = dag.edges().map(e => [dag.node(e.v), dag.node(e.w)])
-    console.log(data)
 
     const arrow = this.arrows.selectAll('g.arrow')
       .data(data)
@@ -107,7 +106,6 @@ module.exports = class ChainGraph {
 
   DrawHighlight (event, action) {
     const block = this.blocks.select('.b-' + action.cid + ' .' + action.counter)
-    console.log(block)
 
     block
       .transition()
@@ -125,7 +123,6 @@ module.exports = class ChainGraph {
     this.DrawArrows(filecoin, dag)
 
     if (event) {
-      console.log('event found', event)
       event.actions.forEach(action => {
         if (action.type === 'highlight') {
           this.DrawHighlight(event, action)

@@ -13,7 +13,7 @@ module.exports = (filecoin, blockStyle) => {
   for (let blockCid in filecoin.blocks) {
     const block = filecoin.blocks[blockCid]
     block.parents.forEach(p => {
-      g.setEdge(blockCid, p.cid)
+      g.setEdge(blockCid, p)
     })
   }
   dagre.layout(g)

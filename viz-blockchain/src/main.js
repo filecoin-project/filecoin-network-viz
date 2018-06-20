@@ -16,9 +16,6 @@ function runFake () {
   sim.runEpoch(4)
   chain.Draw(sim.filecoin)
 
-  sim.runEpoch(3)
-  chain.Draw(sim.filecoin)
-
   setTimeout(() => {
     sim.runEpoch(4)
     chain.Draw(sim.filecoin)
@@ -27,7 +24,7 @@ function runFake () {
 
   setTimeout(() => {
     const miner = 'miner' + GetRandomInt(0, minersCount)
-    const block = sim.filecoin.epochs[sim.filecoin.latestEpoch][0]
+    const block = sim.filecoin.heights[sim.filecoin.latestHeight][0]
 
     const obj = {
       node: miner,

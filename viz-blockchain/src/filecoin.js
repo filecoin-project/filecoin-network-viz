@@ -8,8 +8,8 @@ const Block = require('./block')
 // filecoin.blocks[0].seen shows the miners count
 module.exports = class Filecoin {
   constructor (obj = {blocks: {}, minersHeads: {}}) {
-    this.latestEpoch = 0
-    this.epochs = [] // [int]Block
+    this.latestHeight = 0
+    this.heights = [] // [int]Block
     this.blocks = {} // block-cid => [Block]
     this.minersHeads = {} // miner-id => block-cid
 
@@ -47,33 +47,57 @@ module.exports = class Filecoin {
     return this.blocks[blockCid]
   }
 
-  ReceivedBlock (obj = {}) {
+  ReceivedBlock (obj = {}, rec = false) {
+    // console.log('received', obj.block, rec)
     let {to, from, block} = obj
-    if (!from) {
-      from = to
-    }
-
-    this.upsertMiner(to)
-    this.upsertMiner(from)
 
     const b = new Block(block)
+
+    b.parents.forEach(p => {
+      this.ReceivedBlock({
+        from: from,
+        to: to,
+        block: {cid: p, height: b.height - 1}
+      }, true)
+    })
+
     // create block if does not exist
+    console.log('adding', obj.block, b)
     if (!this.blocks[b.cid]) {
       this.blocks[b.cid] = b
 
-      // create epoch if does not exist
-      if (!this.epochs[b.epoch]) {
-        this.epochs[b.epoch] = []
+      // create height if does not exist
+      if (b.height > -1) {
+        if (!this.heights[b.height]) {
+          this.heights[b.height] = []
+        }
+        if (b.height > this.latestHeight) {
+          this.latestHeight = b.height
+        }
+        // add block to height
+        this.heights[b.height].push(b)
+        console.log('adding', b.cid, 'in height', b.height)
       }
-      if (b.epoch > this.latestEpoch) {
-        this.latestEpoch = b.epoch
-      }
-      // add block to epoch
-      this.epochs[b.epoch].push(b)
+    } else {
+      // console.log('already found!', b)
     }
 
-    this.blocks[b.cid].seenBy[to] = true
-    this.blocks[b.cid].seenBy[from] = true
+    // sometimes we might receive a block as a parent of a node
+    // and we don't really get its parents
+    // so whenever we receive the actual block, we update its parents!
+    if (this.blocks[b.cid].parents.length === 0 && b.parents.length > 0) {
+      this.blocks[b.cid].parents = b.parents
+    }
+
+    // update seen
+    if (to) {
+      this.blocks[b.cid].seenBy[to] = true
+      this.upsertMiner(to)
+    }
+    if (from) {
+      this.upsertMiner(from)
+      this.blocks[b.cid].seenBy[from] = true
+    }
 
     return {
       name: 'ReceivedBlock',
