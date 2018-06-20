@@ -2,7 +2,7 @@ const dagre = require('dagre')
 
 module.exports = (filecoin, blockStyle) => {
   var g = new dagre.graphlib.Graph()
-  g.setGraph({})
+  g.setGraph({nodesep: 80})
   g.setDefaultEdgeLabel(function () { return {} })
   g.setDefaultNodeLabel(function () { return {} })
     // add nodes
@@ -16,6 +16,6 @@ module.exports = (filecoin, blockStyle) => {
       g.setEdge(blockCid, p.cid)
     })
   }
-  dagre.layout(g, {marginx: 1000})
+  dagre.layout(g)
   return g
 }

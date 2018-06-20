@@ -4,7 +4,7 @@ const dagLayout = require('./dag-layout')
 
 const blockSizes = {
   width: 50,
-  height: 60
+  height: 70
 }
 
 module.exports = class ChainGraph {
@@ -56,7 +56,7 @@ module.exports = class ChainGraph {
       .attr('class', 'fo-counters')
       .attr('transform', d => {
         const node = dag.node(d)
-        return 'translate(' + 0 + ',' + (blockSizes.height) + ')'
+        return 'translate(' + blockSizes.width + ',' + 0 + ')'
       })
       .append('xhtml:body')
         .html('<div class="counters"><div class="counter counterPicked">1</div><div class="counter counterSeen">1</div></div>')
@@ -99,10 +99,10 @@ module.exports = class ChainGraph {
     arrow
       .transition()
       .select('line.arrow1')
-        .attr('x1', d => d[0].x + blockSizes.height / 2)
-        .attr('y1', d => d[0].y + blockSizes.height)
-        .attr('x2', d => d[1].x + blockSizes.height / 2)
-        .attr('y2', d => d[1].y + blockSizes.height)
+        .attr('x1', d => d[0].x + blockSizes.width / 2)
+        .attr('y1', d => d[0].y + blockSizes.height + 2)
+        .attr('x2', d => d[1].x + blockSizes.width / 2)
+        .attr('y2', d => d[1].y + 16)
   }
 
   Draw (filecoin) {

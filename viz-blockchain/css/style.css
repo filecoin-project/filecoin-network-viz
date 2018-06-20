@@ -20,25 +20,28 @@ text {
 }
 
 .counters {
-  display: inline-flex;
-  margin-top: 10px;
+    margin-top: 26px;
+    margin-left: 8px;
 }
 .counter {
     color: #fff;
-    padding: 2px;
+    padding: 4px 5px;
     width: 20px;
     text-align: center;
     font-size: 0.6em;
+    border-radius: 4px;
 }
 
 .counterSeen {
   background-color: #555555;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
 }
 
 .counterPicked {
   background-color: #1E90FB;
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
+}
+
+.minerId {
+  font-size: 0.5em;
+  text-align: center;
+  width: 50px;
 }

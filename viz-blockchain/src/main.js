@@ -7,13 +7,16 @@ const GetRandomInt = require('./utils').GetRandomInt
 
 const chain = new ChainGraph()
 
-// runFake(chain)
-runLive(chain)
+runFake(chain)
+// runLive(chain)
 
 function runFake () {
   const minersCount = 10
   const sim = new Simulation(minersCount)
   sim.runEpoch(4)
+  chain.Draw(sim.filecoin)
+
+  sim.runEpoch(3)
   chain.Draw(sim.filecoin)
 
   setTimeout(() => {
