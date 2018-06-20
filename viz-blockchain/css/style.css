@@ -1,0 +1,47 @@
+body {
+}
+
+h1 {
+  font-family: 'Source Sans Pro', sans-serif;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+text {
+  font-family: sans-serif;
+  pointer-events: none;
+}
+
+.main section {
+}
+
+.arrow line {
+  stroke: #bcd0df;
+}
+
+.counters {
+    margin-top: 26px;
+    margin-left: 8px;
+}
+.counter {
+    color: #fff;
+    padding: 4px 5px;
+    width: 20px;
+    text-align: center;
+    font-size: 0.6em;
+    border-radius: 4px;
+}
+
+.counterSeen {
+  background-color: #555555;
+}
+
+.counterPicked {
+  background-color: #1E90FB;
+}
+
+.minerId {
+  font-size: 0.5em;
+  text-align: center;
+  width: 50px;
+}
