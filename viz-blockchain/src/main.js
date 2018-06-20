@@ -1,13 +1,14 @@
-// const request = require('request')
-// const ndjson = require('ndjson')
+const request = require('request')
+const ndjson = require('ndjson')
 const ChainGraph = require('./graph-chain')
 const Simulation = require('./simulation')
+const Filecoin = require('./filecoin')
 const GetRandomInt = require('./utils').GetRandomInt
 
 const chain = new ChainGraph()
 
-runFake(chain)
-// runLive(chain, market, network)
+// runFake(chain)
+runLive(chain)
 
 function runFake () {
   const minersCount = 10
