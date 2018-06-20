@@ -1,7 +1,8 @@
 // const request = require('request')
 // const ndjson = require('ndjson')
 const ChainGraph = require('./graph-chain')
-const Simulation = require('./Simulation')
+const Simulation = require('./simulation')
+const GetRandomInt = require('./utils').GetRandomInt
 
 const chain = new ChainGraph()
 
@@ -17,22 +18,20 @@ function runFake () {
   setTimeout(() => {
     sim.runEpoch(4)
     chain.Draw(sim.filecoin)
+    console.log(sim.filecoin)
+  }, 1000)
+
+  setTimeout(() => {
+    const miner = 'miner' + GetRandomInt(0, minersCount)
+    const block = sim.filecoin.epochs[sim.filecoin.latestEpoch][0]
+
+    const obj = {
+      node: miner,
+      block: block
+    }
+    sim.filecoin.PickedChain(obj)
+    chain.Draw(sim.filecoin)
   }, 2000)
-
-  // setInterval(() => {
-  //   if (blockNumber === -1) {
-  //     return
-  //   }
-  //   const miner = 'miner' + GetRandomInt(0, minersCount)
-  //   const block = 'block' + GetRandomInt(Math.max(0, blockNumber - 5), blockNumber)
-
-  //   const obj = {
-  //     node: miner,
-  //     block: filecoin.GetBlock(block)
-  //   }
-  //   filecoin.PickedChain(obj)
-  //   // chain.Draw(filecoin)
-  // }, 500)
 }
 
 // function runLive (chain, market, network) {

@@ -1,8 +1,14 @@
 const GetRandomInt = require('./utils').GetRandomInt
 const Block = require('./block')
 
+// how to use it:
+// filecoin.blocks is a map cid->Block
+// filecoin.miners is a list of miner ids
+// filecoin.heads is a map of cid->miners
+// filecoin.blocks[0].seen shows the miners count
 module.exports = class Filecoin {
   constructor (obj = {blocks: {}, minersHeads: {}}) {
+    this.latestEpoch = 0
     this.epochs = [] // [int]Block
     this.blocks = {} // block-cid => [Block]
     this.minersHeads = {} // miner-id => block-cid
@@ -13,10 +19,12 @@ module.exports = class Filecoin {
     ]
   }
 
+  // return a list of miners
   get miners () {
     return Object.keys(this.minersHeads)
   }
 
+  // return a map of cids to how many miners count it as heads
   get heads () {
     const heads = {}
     this.miners.forEach(m => {

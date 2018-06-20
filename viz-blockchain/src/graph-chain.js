@@ -2,76 +2,112 @@ const dagre = require('dagre')
 
 const dagLayout = require('./dag-layout')
 
+const blockSizes = {
+  width: 50,
+  height: 60
+}
+
 module.exports = class ChainGraph {
   constructor (target = '#viz-chain .viz') {
-    this.svg = d3.select(target).append('svg')
+    const svg = d3.select(target).append('svg')
     .attr('id', 'blockchain')
-    .attr('width', 200)
-    .attr('height', 700)
+    .attr('width', 1200)
+    .attr('height', 1200)
+    .append('g')
+
+    const rect = svg.append('rect')
+      .attr('width', 1200)
+      .attr('height', 1200)
+      .style('fill', 'none')
+      .style('pointer-events', 'all')
+
+    const container = svg.append('g')
+
+    this.arrows = container
+      .append('g')
+      .attr('class', 'arrows')
+
+    this.blocks = container
+      .append('g')
+      .attr('class', 'blocks')
+
+    var zoom = d3.behavior.zoom()
+      // .scaleExtent([1, 10])
+      .on('zoom', () => {
+        container.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')')
+      })
+    svg.call(zoom)
+  }
+
+  DrawBlocks (filecoin, dag) {
+    const block = this.blocks.selectAll('g.block')
+      .data(dag.nodes())
+
+    const newBlock = block.enter()
+      .append('g')
+      .attr('class', d => 'block')
+
+    newBlock.append('foreignObject')
+      .attr('class', 'fo-blockname')
+      .append('xhtml:body')
+        .html('<div class="minerId">yo</div>')
+
+    newBlock.append('foreignObject')
+      .attr('class', 'fo-counters')
+      .attr('transform', d => {
+        const node = dag.node(d)
+        return 'translate(' + 0 + ',' + (blockSizes.height) + ')'
+      })
+      .append('xhtml:body')
+        .html('<div class="counters"><div class="counter counterPicked">1</div><div class="counter counterSeen">1</div></div>')
+
+    newBlock.append('image')
+      .attr('href', 'img/block.png')
+      .attr('width', 50)
+
+    block
+      .attr('class', d => 'block b-' + d)
+      .transition()
+      .attr('transform', d => {
+        const node = dag.node(d)
+        return 'translate(' + node.x + ',' + node.y + ')'
+      })
+
+    block.select('.minerId')
+        .text(d => filecoin.blocks[d].cid)
+    block.select('.counterSeen')
+        .text(d => filecoin.blocks[d].seen)
+    block.select('.counterPicked')
+        .text(d => filecoin.heads[d] || 0)
+  }
+
+  DrawArrows (filecoin, dag) {
+    const data = dag.edges().map(e => [dag.node(e.v), dag.node(e.w)])
+    console.log(data)
+
+    const arrow = this.arrows.selectAll('g.arrow')
+      .data(data)
+
+    const newArrow = arrow.enter()
+      .append('g')
+      .attr('class', 'arrow')
+
+    newArrow
+      .append('line')
+        .attr('class', 'arrow1')
+
+    arrow
+      .transition()
+      .select('line.arrow1')
+        .attr('x1', d => d[0].x + blockSizes.height / 2)
+        .attr('y1', d => d[0].y + blockSizes.height)
+        .attr('x2', d => d[1].x + blockSizes.height / 2)
+        .attr('y2', d => d[1].y + blockSizes.height)
   }
 
   Draw (filecoin) {
-    const g = dagLayout(filecoin)
-    // g.nodes().forEach(function (v) {
-    //   console.log('Node ' + v + ': ' + JSON.stringify(g.node(v)))
-    // })
-    // g.edges().forEach(function (e) {
-    //   console.log('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)))
-    // })
-
-    // console.log(filecoin.GetEpochs())
-
-  //   // Blockchain --
-  //   const epoch = this.svg.selectAll('g.epoch')
-  //     .data(filecoin.GetEpochs(), (d, i) => i)
-
-  //   // Epochs ---
-
-  //   // on blocks being added
-  //   epoch.enter()
-  //     .append('g')
-  //     .attr('class', (d, i) => 'epoch e-' + i)
-
-  //   // on blocks being removed
-  //   epoch.exit()
-  //     .remove()
-
-  //   // on blocks being updated
-  //   epoch
-  //     .transition()
-  //     .attr('transform', (d, i) => {
-  //       return 'translate(0,' + (filecoin.GetEpochs().length - i) * 50 + ')'
-  //     })
-
-  //   // Blocks --
-  //   const block = epoch
-  //     .selectAll('g.epoch')
-  //     .data(d => {
-  //       console.log(d)
-  //       return d
-  //     })
-
-  //   // on blocks being added
-
-  //   const newBlock = block.enter()
-  //     .append('g')
-  //     .attr('class', (d, i) => 'block b-' + d)
-
-  //   newBlock.append('image')
-  //     .attr('href', 'img/block.png')
-  //     .attr('width', 50)
-
-  //   newBlock.append('text')
-  //     .attr('class', 'epoch-number')
-  //     .attr('x', 60)
-  //     .attr('y', 50)
-
-  //   // on blocks being deleted
-  //   block.exit()
-  //     .remove()
-
-  //   // on blocks being updated
-  //   block.select('text')
-  //     .text((d, i) => 'Block ' + d)
+    const dag = dagLayout(filecoin, blockSizes)
+    this.DrawBlocks(filecoin, dag)
+    this.DrawArrows(filecoin, dag)
   }
 }

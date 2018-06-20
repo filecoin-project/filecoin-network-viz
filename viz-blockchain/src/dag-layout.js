@@ -1,12 +1,13 @@
 const dagre = require('dagre')
 
-module.exports = (filecoin) => {
+module.exports = (filecoin, blockStyle) => {
   var g = new dagre.graphlib.Graph()
   g.setGraph({})
   g.setDefaultEdgeLabel(function () { return {} })
+  g.setDefaultNodeLabel(function () { return {} })
     // add nodes
   for (let blockCid in filecoin.blocks) {
-    g.setNode(blockCid, { label: 'b: ' + blockCid, width: 100, height: 100 })
+    g.setNode(blockCid, { width: blockStyle.width, height: blockStyle.height })
   }
     // add parents
   for (let blockCid in filecoin.blocks) {
@@ -15,6 +16,6 @@ module.exports = (filecoin) => {
       g.setEdge(blockCid, p.cid)
     })
   }
-  dagre.layout(g)
+  dagre.layout(g, {marginx: 1000})
   return g
 }

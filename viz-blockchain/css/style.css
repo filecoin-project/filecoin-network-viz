@@ -14,3 +14,31 @@ text {
 
 .main section {
 }
+
+.arrow line {
+  stroke: #bcd0df;
+}
+
+.counters {
+  display: inline-flex;
+  margin-top: 10px;
+}
+.counter {
+    color: #fff;
+    padding: 2px;
+    width: 20px;
+    text-align: center;
+    font-size: 0.6em;
+}
+
+.counterSeen {
+  background-color: #555555;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.counterPicked {
+  background-color: #1E90FB;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
