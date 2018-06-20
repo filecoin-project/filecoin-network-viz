@@ -43,10 +43,11 @@ function runLive (chain, market, network) {
       // sanitizeInts(entry)
       if (filecoin[entry.type]) {
         const event = filecoin[entry.type](entry)
+        console.log('recognized entry', entry.type, entry, event)
         // if (event) {
         //   chain.Draw(sim.filecoin, event)
         // }
-        chain.Draw(filecoin)
+        chain.Draw(filecoin, event)
       }
     })
   }
