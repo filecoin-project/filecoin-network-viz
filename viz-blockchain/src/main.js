@@ -13,20 +13,18 @@ runLive(chain)
 function runFake () {
   const minersCount = 10
   const sim = new Simulation(minersCount)
-  sim.runEpoch(4)
+  sim.runEpoch(1)
   chain.Draw(sim.filecoin)
 
-  sim.runEpoch(3)
-  chain.Draw(sim.filecoin)
-
-  setTimeout(() => {
-    sim.runEpoch(4)
+  setInterval(() => {
+    sim.runEpoch(GetRandomInt(0, 4))
     chain.Draw(sim.filecoin)
   }, 1000)
 
-  setTimeout(() => {
+  setInterval(() => {
     const miner = 'miner' + GetRandomInt(0, minersCount)
-    const block = sim.filecoin.heights[sim.filecoin.latestHeight][0]
+    const max = sim.filecoin.heights[sim.filecoin.latestHeight].length - 1
+    const block = sim.filecoin.heights[sim.filecoin.latestHeight][GetRandomInt(0, max)]
 
     const obj = {
       node: miner,
@@ -34,7 +32,7 @@ function runFake () {
     }
     const event = sim.filecoin.PickedChain(obj)
     chain.Draw(sim.filecoin, event)
-  }, 2000)
+  }, 400)
 }
 
 function runLive (chain, market, network) {
