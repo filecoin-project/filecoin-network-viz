@@ -1,8 +1,7 @@
 // const request = require('request')
 // const ndjson = require('ndjson')
-const Filecoin = require('./filecoin')
 const ChainGraph = require('./graph-chain')
-const GetRandomInt = require('./utils').GetRandomInt
+const Simulation = require('./Simulation')
 
 const chain = new ChainGraph()
 
@@ -10,51 +9,30 @@ runFake(chain)
 // runLive(chain, market, network)
 
 function runFake () {
-  let minersCount = 10
-  let blockNumber = -1
-  let epoch = -1
+  const minersCount = 10
+  const sim = new Simulation(minersCount)
+  sim.runEpoch(4)
+  chain.Draw(sim.filecoin)
 
-  // Fake parts: start
-  let filecoin = new Filecoin()
+  setTimeout(() => {
+    sim.runEpoch(4)
+    chain.Draw(sim.filecoin)
+  }, 2000)
 
-  // network.DrawNodes(filecoin)
+  // setInterval(() => {
+  //   if (blockNumber === -1) {
+  //     return
+  //   }
+  //   const miner = 'miner' + GetRandomInt(0, minersCount)
+  //   const block = 'block' + GetRandomInt(Math.max(0, blockNumber - 5), blockNumber)
 
-  setInterval(() => {
-    epoch++
-
-    const blocks = GetRandomInt(0, 4)
-    for (let i = 0; i < blocks; i++) {
-      blockNumber++
-
-      const obj = {
-        to: 'miner' + GetRandomInt(0, minersCount),
-        block: {
-          cid: 'block' + blockNumber,
-          epoch: epoch
-        }
-      }
-
-      obj.parents = filecoin.epochs[epoch - 1]
-
-      filecoin.ReceivedBlock(obj)
-    }
-    console.log('sol', filecoin.heads, filecoin.miners)
-  }, 1000)
-
-  setInterval(() => {
-    if (blockNumber === -1) {
-      return
-    }
-    const miner = 'miner' + GetRandomInt(0, minersCount)
-    const block = 'block' + GetRandomInt(Math.max(0, blockNumber - 5), blockNumber)
-
-    const obj = {
-      node: miner,
-      block: filecoin.GetBlock(block)
-    }
-    filecoin.PickedChain(obj)
-    console.log('sol', filecoin.heads, filecoin.miners)
-  }, 500)
+  //   const obj = {
+  //     node: miner,
+  //     block: filecoin.GetBlock(block)
+  //   }
+  //   filecoin.PickedChain(obj)
+  //   // chain.Draw(filecoin)
+  // }, 500)
 }
 
 // function runLive (chain, market, network) {

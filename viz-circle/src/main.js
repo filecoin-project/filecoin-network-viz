@@ -11,7 +11,7 @@ const market = new MarketGraph()
 const network = new NetworkGraph()
 
 runFake(chain, market, network)
-//runLive(chain, market, network)
+// runLive(chain, market, network)
 
 function runFake (chain, market, network) {
   let minersCount = 10
@@ -86,7 +86,7 @@ function GetLiveFeed (cb) {
     })
 }
 
-function sanitizeInts(order) {
+function sanitizeInts (order) {
   var fix = ['price', 'total', 'size']
   fix.map(f => {
     if (order[f]) {

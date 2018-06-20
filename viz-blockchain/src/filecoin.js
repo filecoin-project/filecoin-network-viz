@@ -1,19 +1,9 @@
 const GetRandomInt = require('./utils').GetRandomInt
-
-class Block {
-  constructor (obj = {}) {
-    this.cid = obj.cid || 'testblock'
-    this.parents = obj.parents || []
-    this.seenBy = obj.seenBy || {}
-  }
-  get seen () {
-    return Object.keys(this.seenBy).length
-  }
-}
+const Block = require('./block')
 
 module.exports = class Filecoin {
   constructor (obj = {blocks: {}, minersHeads: {}}) {
-    this.epochs = [] // [int]blockCid
+    this.epochs = [] // [int]Block
     this.blocks = {} // block-cid => [Block]
     this.minersHeads = {} // miner-id => block-cid
 
@@ -46,7 +36,6 @@ module.exports = class Filecoin {
   }
 
   GetBlock (blockCid) {
-    console.log('getting block', blockCid, this.blocks[blockCid])
     return this.blocks[blockCid]
   }
 
@@ -59,20 +48,24 @@ module.exports = class Filecoin {
     this.upsertMiner(to)
     this.upsertMiner(from)
 
+    const b = new Block(block)
     // create block if does not exist
-    if (!this.blocks[block.cid]) {
-      this.blocks[block.cid] = new Block(block)
+    if (!this.blocks[b.cid]) {
+      this.blocks[b.cid] = b
 
       // create epoch if does not exist
-      if (!this.epochs[block.epoch]) {
-        this.epochs[block.epoch] = []
+      if (!this.epochs[b.epoch]) {
+        this.epochs[b.epoch] = []
+      }
+      if (b.epoch > this.latestEpoch) {
+        this.latestEpoch = b.epoch
       }
       // add block to epoch
-      this.epochs[block.epoch].push(block.cid)
+      this.epochs[b.epoch].push(b)
     }
 
-    this.blocks[block.cid].seenBy[to] = true
-    this.blocks[block.cid].seenBy[from] = true
+    this.blocks[b.cid].seenBy[to] = true
+    this.blocks[b.cid].seenBy[from] = true
 
     return {
       name: 'ReceivedBlock',
