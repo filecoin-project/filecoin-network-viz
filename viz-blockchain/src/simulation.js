@@ -10,7 +10,7 @@ module.exports = class Simulation {
 
   runEpoch (blocks) {
     this.height++
-    console.log('new epoch ----')
+    // console.log('new epoch ----')
     for (let i = 0; i < blocks; i++) {
       this.blockNumber++
 

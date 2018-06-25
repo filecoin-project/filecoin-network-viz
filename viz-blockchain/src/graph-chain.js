@@ -106,7 +106,7 @@ module.exports = class ChainGraph {
 
   DrawHighlight (event, action) {
     const block = this.blocks.select('.b-' + action.cid + ' .' + action.counter)
-    console.log('soon to highlight', action.cid, action.counter)
+    // console.log('soon to highlight', action.cid, action.counter)
 
     block
       .transition()

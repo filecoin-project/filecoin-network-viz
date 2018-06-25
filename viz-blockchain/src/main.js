@@ -43,7 +43,7 @@ function runLive (chain, market, network) {
       // sanitizeInts(entry)
       if (filecoin[entry.type]) {
         const event = filecoin[entry.type](entry)
-        console.log('recognized entry', entry.type, entry, event)
+        // console.log('recognized entry', entry.type, entry, event)
         // if (event) {
         //   chain.Draw(sim.filecoin, event)
         // }
@@ -57,7 +57,7 @@ function GetLiveFeed (cb) {
   request.get('http://127.0.0.1:7002/logs')
     .pipe(ndjson.parse())
     .on('data', function (obj) {
-      console.log(obj.type)
+      // console.log(obj.type)
       cb(obj)
     })
 }
