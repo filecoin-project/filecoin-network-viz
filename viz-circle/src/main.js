@@ -9,17 +9,32 @@ const NetworkGraph = require('./graph-network')
 const HeartbeatGraph = require('./graph-heartbeat')
 const GetRandomInt = require('./utils').GetRandomInt
 
-const chain = new ChainGraph()
-const market = new MarketGraph()
-const network = new NetworkGraph()
-const orderbook = new OrderbookGraph()
-const deals = new DealsGraph()
-const heartbeats = new HeartbeatGraph()
+const feedUrl = 'http://127.0.0.1:7002/logs'
 
-//runFake(chain, market, network)
-runLive(chain, market, network, orderbook, deals, heartbeats)
+window.document.addEventListener('DOMContentLoaded', main)
 
-function runFake (chain, market, network) {
+function main() {
+  const sim = {
+    chain: new ChainGraph(),
+    market: new MarketGraph(),
+    network: new NetworkGraph(),
+    orderbook: new OrderbookGraph(),
+    deals: new DealsGraph(),
+    heartbeats: new HeartbeatGraph(),
+    eventQueue: [], // use this to slow down render
+    drawSpeed: 25, // ms
+  }
+
+  //runFake(sim)
+  runLive(sim, feedUrl)
+  window.sim = sim
+}
+
+function runFake (sim) {
+  var chain = sim.chain
+  var market = sim.market
+  var network = sim.network
+
   let minersCount = 10
   let clientsCount = 10
 
@@ -61,33 +76,61 @@ function runFake (chain, market, network) {
 
     network.DrawNodes(filecoin)
   }, 1500)
+
+  didCatchUp()
 }
 
-function runLive (chain, market, network, orderbook, deals, heartbeats) {
-  let filecoin = new Filecoin()
+function processSimEvent (sim, entry) {
+  if (sim.filecoin[entry.type]) {
+    //console.log(`[${entry.type}]`, entry)
+    const event = sim.filecoin[entry.type](entry)
+    if (event) {
+      sim.network.DrawEvent(event)
+    }
+    sim.network.DrawNodes(sim.filecoin)
+    sim.market.Draw(sim.filecoin.orderbook)
+    sim.chain.Draw(sim.filecoin.chain)
+    sim.orderbook.Draw(sim.filecoin.orderbook)
+    sim.deals.Draw(sim.filecoin.deals)
+    sim.heartbeats.Draw(sim.filecoin.heartbeats)
+  }
+}
+
+function didCatchUp() {
+  document.querySelector('#catching-up-msg').style.display = 'none'
+  console.log('caught up')
+}
+
+function runEventFeed (sim) {
+  var caughtUp = false
+  // cancel it by cancelling the interval
+  sim.periodicDraw = setInterval(() => {
+    var e = sim.eventQueue.shift()
+    if (!e) return
+    processSimEvent(sim, e)
+
+    // length going from 1 -> 0
+    if (!caughtUp && sim.eventQueue.length == 0) {
+      caughtUp = true
+      return didCatchUp()
+    }
+  }, sim.drawSpeed)
+}
+
+function runLive (sim, feedUrl) {
+  sim.filecoin = new Filecoin()
+  runEventFeed(sim) // kick off the process.
   window.onload = function () {
-    GetLiveFeed((res) => {
+    GetLiveFeed(feedUrl, (res) => {
       const entry = res
       sanitizeInts(entry)
-      if (filecoin[entry.type]) {
-        //console.log(`[${entry.type}]`, entry)
-        const event = filecoin[entry.type](entry)
-        if (event) {
-          network.DrawEvent(event)
-        }
-        network.DrawNodes(filecoin)
-        market.Draw(filecoin.orderbook)
-        chain.Draw(filecoin.chain)
-        orderbook.Draw(filecoin.orderbook)
-        deals.Draw(filecoin.deals)
-        heartbeats.Draw(filecoin.heartbeats)
-      }
+      sim.eventQueue.push(entry)
     })
   }
 }
 
-function GetLiveFeed (cb) {
-  request.get('http://127.0.0.1:7002/logs')
+function GetLiveFeed (feedUrl, cb) {
+  request.get(feedUrl)
     .pipe(ndjson.parse())
     .on('data', function (obj) {
       cb(obj)

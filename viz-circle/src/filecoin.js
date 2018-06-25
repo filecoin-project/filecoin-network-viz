@@ -33,7 +33,7 @@ module.exports = class Filecoin {
 
   HeartBeat(node) {
     this.heartbeats[node.from] = node
-    console.log(this.nodes)
+    // console.log(this.nodes)
   }
 
   CreateMiner(obj = {}) {

@@ -9,7 +9,7 @@ module.exports = class HeartbeatGraph {
       <thead>
         <tr>
           <th>PEER</th>
-          <th>CHAINHEAD</th>
+          <th>CHAIN HEAD</th>
           <th># PEERS</th>
           <th># ASKS (latest)</th>
           <th># BIDS (latest)</th>
@@ -37,7 +37,7 @@ module.exports = class HeartbeatGraph {
     }
 
     for (let [peerID, heartbeat] of Object.entries(heartbeats)) {
-      console.log(heartbeat)
+      // console.log(heartbeat)
       const chainhead = heartbeat['best-block']
       const { total: totalAsks, top: highestAsk } = msgInfo(heartbeat.asks)
       const { total: totalBids, top: highestBid } = msgInfo(heartbeat.bids)
