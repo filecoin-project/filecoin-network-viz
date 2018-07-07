@@ -13,8 +13,8 @@ module.exports = class NetworkGraph {
     // Draw two arcs, nodes will be around this
     var dim = width - 80
     this.circle = this.svg.append('path')
+        .attr('class', 'network-circle')
         .attr('d', 'M 40, ' + (dim / 2 + 40) + ' a ' + dim / 2 + ',' + dim / 2 + ' 0 1,0 ' + dim + ',0 a ' + dim / 2 + ',' + dim / 2 + ' 0 1,0 ' + dim * -1 + ',0')
-        .style('fill', '#f5f5f5')
 
     this.linesGroup = this.svg.append('g')
       .attr('id', 'paths')
@@ -123,7 +123,7 @@ module.exports = class NetworkGraph {
         .text(d => { return d.id.slice(0, 10) })
 
     network.selectAll('text.balance')
-      .text(d => { return d.balance })
+      .text(d => { return d.balance / 1000.0 })
   }
 
   DrawEvent (event) {

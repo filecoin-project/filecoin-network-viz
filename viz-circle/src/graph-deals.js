@@ -3,7 +3,7 @@ module.exports = class DealsGraph {
     this.svg = d3.select(target).append('svg')
     .attr('id', 'blockchain')
     .attr('width', 200)
-    .attr('height', 800)
+    .attr('height', 1000)
     .attr('transform', (d, i) => {
       return 'translate(0,-15)'
     })
@@ -56,7 +56,7 @@ module.exports = class DealsGraph {
     blockchain
       .transition()
       .attr('transform', (d, i) => {
-        return 'translate(0,' + (data.length - i) * 65 + ')'
+        return 'translate(0,' + (data.length - i) * 70 + ')'
       })
   }
 }

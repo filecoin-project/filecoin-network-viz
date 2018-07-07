@@ -3,7 +3,7 @@ module.exports = class OrderbookGraph {
     this.svg = d3.select(target).append('svg')
     .attr('id', 'blockchain')
     .attr('width', 200)
-    .attr('height', 800)
+    .attr('height', 1000)
   }
 
   Draw(data) {
@@ -48,7 +48,7 @@ module.exports = class OrderbookGraph {
     blockchain
       .transition()
       .attr('transform', (d, i) => {
-        return 'translate(0,' + (data.length - i) * 50 + ')'
+        return 'translate(0,' + (data.length - i) * 55 + ')'
       })
   }
 }

@@ -1,6 +1,10 @@
 body {
 }
 
+body.dark {
+  background: #000;
+}
+
 .main, .table-data {
   max-width: 1920px;
   margin: 0 auto;
@@ -9,7 +13,11 @@ body {
 h1 {
   font-family: 'Source Sans Pro', sans-serif;
   padding-top: 0;
-  margin-top: 0;
+  margin-top: 20;
+}
+
+body.dark h1 {
+  color: #fff;
 }
 
 .orderbook-visualisation-tooltip {
@@ -21,14 +29,26 @@ h1 {
   border-radius: 3px;
 }
 
+path.network-circle {
+  fill: rgb(245, 245, 245);
+}
+
+body.dark path.network-circle {
+  fill: #202020;
+}
+
 .network-visualisation-tooltip {
   position: absolute;
-  background-color: rgba(0,0,0,.7);
+  background-color: rgba(255,255,255,.3);
   color: white;
   padding: 5px;
   font-size: 12px;
   border-radius: 3px;
 }
+body.dark .network-visualisation-tooltip {
+  background-color: rgba(255,255,255,.3);
+}
+
 
 line.node-link, path.node-link {
   fill: none;
@@ -47,12 +67,21 @@ circle.node {
   fill: white;
   stroke: black;
 }
+body.dark circle.node {
+  fill: black;
+  stroke: white;
+}
+
 circle.node+text {
   text-anchor: middle;
 }
 text {
-  font-family: sans-serif;
+  font-family: monospace;
   pointer-events: none;
+}
+
+body.dark text {
+  fill: #fff;
 }
 
 .type-miner .node {
@@ -70,6 +99,7 @@ text {
 
 #viz-chain {
 }
+
 #viz-depth {
 }
 
@@ -84,6 +114,10 @@ text {
     width: 100%;
 }
 
+body.dark .viz-table {
+    border: solid 1px #333;
+}
+
 .viz-table thead th {
     background-color: #EDEDED;
     border: solid 1px #c6c6c6;
@@ -93,11 +127,24 @@ text {
     text-shadow: 1px 1px 1px #fff;
 }
 
+body.dark .viz-table thead th {
+  background-color: #333;
+  border: solid 1px #555;
+  color: #aaa;
+  text-shadow: 1px 1px 1px #000;
+}
+
 .viz-table tbody td {
     border: solid 1px #c6c6c6;
     color: #333;
     padding: 10px;
     text-shadow: 1px 1px 1px #fff;
+}
+
+body.dark .viz-table tbody td {
+  border: solid 1px #333;
+  color: #bbb;
+  text-shadow: 1px 1px 1px #000;
 }
 
 #viz-depth > svg {
@@ -110,6 +157,10 @@ text {
   stroke: grey;
   stroke-width: 1;
   shape-render: crispEdges;
+}
+
+body.dark #viz-depth .axis path, #viz-depth .axis line {
+  stroke: darkgrey;
 }
 
 #viz-depth .axis text {
@@ -137,6 +188,10 @@ text {
   fill: #337ab7;
 }
 
+g.orders, g.deals {
+  font-size: 12px;
+}
+
 .orders > img {
   margin-top: -5px;
 }
@@ -159,6 +214,11 @@ text {
 }
 
 .main section {
+  margin: 0px 30px;
+}
+
+.main section > div {
+  text-align: center;
 }
 
 .chain {
