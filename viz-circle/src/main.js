@@ -8,6 +8,7 @@ const DealsGraph = require('./graph-deals')
 const NetworkGraph = require('./graph-network')
 const HeartbeatGraph = require('./graph-heartbeat')
 const GetRandomInt = require('./utils').GetRandomInt
+const _ = require('underscore')
 
 const feedUrl = 'http://127.0.0.1:7002/logs'
 
@@ -22,7 +23,7 @@ function main() {
     deals: new DealsGraph(),
     heartbeats: new HeartbeatGraph(),
     eventQueue: [], // use this to slow down render
-    drawSpeed: 25, // ms
+    drawSpeed: 15, // ms
   }
 
   //runFake(sim)
@@ -87,14 +88,47 @@ function processSimEvent (sim, entry) {
     if (event) {
       sim.network.DrawEvent(event)
     }
-    sim.network.DrawNodes(sim.filecoin)
-    sim.market.Draw(sim.filecoin.orderbook)
-    sim.chain.Draw(sim.filecoin.chain)
-    sim.orderbook.Draw(sim.filecoin.orderbook)
-    sim.deals.Draw(sim.filecoin.deals)
-    sim.heartbeats.Draw(sim.filecoin.heartbeats)
+
+    switch (entry.type) {
+    case "ClientJoins":
+    case "MinerJoins":
+      sim.network.DrawNodes(sim.filecoin)
+      break
+
+    case "HeartBeat":
+      drawHBThrottled(sim)
+      break
+
+    case "AddAsk":
+    case "AddBid":
+    case "MakeDeal":
+      drawMarketThrottled(sim)
+      break
+
+    default:
+      drawChainThrottled(sim)
+      break
+    }
   }
 }
+
+function drawMarket(sim) {
+  sim.market.Draw(sim.filecoin.orderbook)
+  sim.orderbook.Draw(sim.filecoin.orderbook)
+  sim.deals.Draw(sim.filecoin.deals)
+}
+drawMarketThrottled = _.throttle(drawMarket, 150)
+
+
+function drawHB(sim) {
+  sim.heartbeats.Draw(sim.filecoin.heartbeats)
+}
+drawHBThrottled = _.throttle(drawHB, 500)
+
+function drawChain(sim) {
+  sim.chain.Draw(sim.filecoin.chain)
+}
+drawChainThrottled = _.throttle(drawChain, 500)
 
 function didCatchUp() {
   document.querySelector('#catching-up-msg').style.display = 'none'
