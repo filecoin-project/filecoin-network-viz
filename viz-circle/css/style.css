@@ -39,7 +39,7 @@ body.dark path.network-circle {
 
 .network-visualisation-tooltip {
   position: absolute;
-  background-color: rgba(255,255,255,.3);
+  background-color: rgba(0,0,0,.7);
   color: white;
   padding: 5px;
   font-size: 12px;
@@ -181,7 +181,7 @@ body.dark #viz-depth .axis path, #viz-depth .axis line {
 }
 
 .bar.ask {
-  fill: rgba(255, 0, 0, 0.4);
+  fill: rgba(0, 77, 128, 0.76);
 }
 
 .bar:hover {

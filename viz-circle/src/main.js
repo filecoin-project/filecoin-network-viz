@@ -147,10 +147,12 @@ class SimDrawer {
     case "AddBid":
     case "MakeDeal":
       this.drawMarket()
+      this.drawNetwork()
       break
 
     default:
       this.drawChain()
+      this.drawNetwork()
       break
     }
   }
