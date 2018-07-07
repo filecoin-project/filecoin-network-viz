@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "ndjson": "^1.5.0",
-    "request": "^2.85.0"
+    "request": "^2.85.0",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "browserify": "^16.2.0"
