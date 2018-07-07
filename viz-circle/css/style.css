@@ -245,3 +245,9 @@ g.orders, g.deals {
 
 .depth-chart {
 }
+
+#viz-stats {
+  text-align: left;
+  font-family: monospace;
+  font-size: 12px;
+}

@@ -23,6 +23,11 @@ function main() {
     deals: new DealsGraph(),
     heartbeats: new HeartbeatGraph(),
     eventQueue: [], // use this to slow down render
+    eventStats: {
+      parsed: 0,
+      processed: 0,
+      drawn: 0,
+    },
     drawSpeed: 15, // ms
   }
 
@@ -81,84 +86,129 @@ function runFake (sim) {
   didCatchUp()
 }
 
-function processSimEvent (sim, entry) {
-  if (sim.filecoin[entry.type]) {
-    //console.log(`[${entry.type}]`, entry)
-    const event = sim.filecoin[entry.type](entry)
+class SimDrawer {
+  constructor(sim) {
+    this.sim = sim
+    this.drawChain = _.throttle(_.bind(this.drawChain, this), 500)
+    this.drawMarket = _.throttle(_.bind(this.drawMarket, this), 150)
+    this.drawNetwork = _.throttle(_.bind(this.drawNetwork, this), 200)
+    this.drawHeartbeats = _.throttle(_.bind(this.drawHeartbeats, this), 500)
+    this.eqel = document.querySelector('#event-queue-stats')
+  }
+
+  drawMarket() {
+    this.sim.market.Draw(this.sim.filecoin.orderbook)
+    this.sim.orderbook.Draw(this.sim.filecoin.orderbook)
+    this.sim.deals.Draw(this.sim.filecoin.deals)
+  }
+
+  drawHeartbeats() {
+    this.sim.heartbeats.Draw(this.sim.filecoin.heartbeats)
+  }
+
+  drawChain() {
+    this.sim.chain.Draw(this.sim.filecoin.chain)
+  }
+
+  drawNetwork() {
+    this.sim.network.DrawNodes(this.sim.filecoin)
+  }
+
+  drawEventStats() {
+    this.sim.eventStats.drawn++
+
+    var stats = this.sim.eventStats
+    this.eqel.innerText = `events: ${stats.processed} / ${stats.parsed}`
+  }
+
+  DrawEvent(entry, event) {
     if (event) {
-      sim.network.DrawEvent(event)
+      this.sim.network.DrawEvent(event)
     }
 
+    this.drawEventStats()
+
     switch (entry.type) {
+    case "BroadcastBlock":
+      this.drawChain()
+      this.drawNetwork() // payments
+      break
+
     case "ClientJoins":
     case "MinerJoins":
-      sim.network.DrawNodes(sim.filecoin)
+      this.drawNetwork()
       break
 
     case "HeartBeat":
-      drawHBThrottled(sim)
+      this.drawHeartbeats()
       break
 
     case "AddAsk":
     case "AddBid":
     case "MakeDeal":
-      drawMarketThrottled(sim)
+      this.drawMarket()
       break
 
     default:
-      drawChainThrottled(sim)
+      this.drawChain()
       break
     }
   }
 }
 
-function drawMarket(sim) {
-  sim.market.Draw(sim.filecoin.orderbook)
-  sim.orderbook.Draw(sim.filecoin.orderbook)
-  sim.deals.Draw(sim.filecoin.deals)
+function processSimEvent (sim, entry) {
+  if (sim.filecoin[entry.type]) {
+    //console.log(`[${entry.type}]`, entry)
+    const event = sim.filecoin[entry.type](entry)
+    sim.drawer.DrawEvent(entry, event)
+  }
 }
-drawMarketThrottled = _.throttle(drawMarket, 150)
-
-
-function drawHB(sim) {
-  sim.heartbeats.Draw(sim.filecoin.heartbeats)
-}
-drawHBThrottled = _.throttle(drawHB, 500)
-
-function drawChain(sim) {
-  sim.chain.Draw(sim.filecoin.chain)
-}
-drawChainThrottled = _.throttle(drawChain, 500)
 
 function didCatchUp() {
   document.querySelector('#catching-up-msg').style.display = 'none'
-  console.log('caught up')
+
+  didCatchUp = () => {} // do nothing from now on (faster)
 }
 
-function runEventFeed (sim) {
-  var caughtUp = false
-  // cancel it by cancelling the interval
-  sim.periodicDraw = setInterval(() => {
-    var e = sim.eventQueue.shift()
-    if (!e) return
-    processSimEvent(sim, e)
+// function runEventFeed (sim) {
+//   var caughtUp = false
+//   // cancel it by cancelling the interval
+//   sim.periodicDraw = setInterval(() => {
+//     processEvents(sim)
+//   }, sim.drawSpeed)
+// }
 
-    // length going from 1 -> 0
-    if (!caughtUp && sim.eventQueue.length == 0) {
-      caughtUp = true
-      return didCatchUp()
-    }
-  }, sim.drawSpeed)
+function processEvents (sim) {
+  sim.isProcessing = true
+
+  while (sim.eventQueue.length > 0) {
+    sim.eventStats.processed++ // log it here to count failed events
+    var e = sim.eventQueue.shift()
+    if (!e) continue
+    processSimEvent(sim, e)
+  }
+
+  didCatchUp()
+  sim.isProcessing = false
 }
 
 function runLive (sim, feedUrl) {
   sim.filecoin = new Filecoin()
-  runEventFeed(sim) // kick off the process.
+  sim.drawer = new SimDrawer(sim)
+
+  var procEvent = _.throttle(processEvents, 25)
+
+  // runEventFeed(sim) // kick off the process.
   window.onload = function () {
     GetLiveFeed(feedUrl, (res) => {
       const entry = res
       sanitizeInts(entry)
       sim.eventQueue.push(entry)
+      sim.eventStats.parsed++
+
+      if (!sim.isProcessing) {
+        _.defer(() => processEvents(sim) )
+      }
     })
   }
 }
