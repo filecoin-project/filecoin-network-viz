@@ -16,6 +16,14 @@ module.exports = class NetworkGraph {
         .attr('class', 'network-circle')
         .attr('d', 'M 40, ' + (dim / 2 + 40) + ' a ' + dim / 2 + ',' + dim / 2 + ' 0 1,0 ' + dim + ',0 a ' + dim / 2 + ',' + dim / 2 + ' 0 1,0 ' + dim * -1 + ',0')
 
+    this.fimg = this.svg
+      .append('image')
+        .attr('class', 'network-circle-f')
+        .attr('href', 'img/filecoin-f.png')
+        .attr('width', '100%')
+        .attr('height','100%')
+
+
     this.linesGroup = this.svg.append('g')
       .attr('id', 'paths')
 
