@@ -3,10 +3,12 @@ Viz tool for Filecoin.
 
 A demo of this tool can be seen in [this talk](https://www.youtube.com/watch?v=w944sFTjLq8). Feel free to use and modify the library. Note that it is not actively maintained.
 
+Network visualizer (this repo: filecoin-network-viz):
 ![Network Visualizer](/img/network-viz.png)
 
-![Network Visualizer CLI](/img/network-viz-cli.png)
 
+[filecoin-network-sim](https://github.com/filecoin-project/filecoin-network-sim) is the required backend for this visualization tool:
+![Network Visualizer CLI](/img/network-viz-cli.png)
 
 # License
 
